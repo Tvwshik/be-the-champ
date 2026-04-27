@@ -42,7 +42,7 @@ function OrdersQueue() {
   const load = () => supabase.from("orders").select("*, order_items(*), profiles(full_name), stations(name)")
     .in("status", ["received", "preparing"]).order("created_at").then(({ data }) => setOrders(data ?? []));
   useEffect(() => { load(); const t = setInterval(load, 10_000); return () => clearInterval(t); }, []);
-  const setStatus = async (id: string, status: string) => {
+  const setStatus = async (id: string, status: "received" | "preparing" | "delivered" | "cancelled") => {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: `Order ${status}` }); load(); }
@@ -83,7 +83,7 @@ function BookingsAdmin() {
     .gte("end_time", new Date(Date.now() - 86400000).toISOString())
     .order("start_time").then(({ data }) => setBookings(data ?? []));
   useEffect(() => { load(); }, []);
-  const setStatus = async (id: string, status: string) => {
+  const setStatus = async (id: string, status: "pending" | "confirmed" | "checked_in" | "completed" | "cancelled") => {
     await supabase.from("bookings").update({ status }).eq("id", id);
     toast({ title: `Booking ${status}` }); load();
   };
