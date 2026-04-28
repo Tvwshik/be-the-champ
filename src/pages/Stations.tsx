@@ -4,24 +4,40 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Monitor, Gamepad, DoorOpen } from "lucide-react";
+import { Monitor, Crown, Sparkles, Trophy, Flame } from "lucide-react";
+
+type StationType =
+  | "pc_standard"
+  | "pc_vip"
+  | "pc_vvip"
+  | "pc_stage"
+  | "pc_scorpion"
+  | "console"
+  | "room";
 
 type Station = {
   id: string;
   name: string;
-  type: "pc_standard" | "pc_vip" | "console" | "room";
+  type: StationType;
   hourly_rate: number;
   capacity: number;
   description: string | null;
   is_active: boolean;
 };
 
-const TYPE_INFO = {
-  pc_standard: { label: "Энгийн PC", icon: Monitor, color: "text-primary" },
-  pc_vip: { label: "VIP PC", icon: Monitor, color: "text-secondary" },
-  console: { label: "Консол", icon: Gamepad, color: "text-accent" },
-  room: { label: "Тусдаа өрөө", icon: DoorOpen, color: "text-warning" },
-} as const;
+const TYPE_INFO: Record<StationType, { label: string; icon: any; color: string; tagline: string }> = {
+  pc_standard: { label: "HALL", icon: Monitor, color: "text-primary", tagline: "Үндсэн талбай · 7800X3D · RTX 5060 · 360Hz" },
+  pc_vip: { label: "VIP", icon: Crown, color: "text-secondary", tagline: "7800X3D · RTX 5060Ti · 500Hz · Night Pass боломжтой" },
+  pc_vvip: { label: "VVIP", icon: Sparkles, color: "text-accent", tagline: "9800X3D · RTX 5070 · 500Hz · Night Pass боломжтой" },
+  pc_stage: { label: "STAGE", icon: Trophy, color: "text-warning", tagline: "9800X3D · RTX 5070Ti · 500Hz · тэмцээний зэрэглэл" },
+  pc_scorpion: { label: "SCORPION", icon: Flame, color: "text-destructive", tagline: "Premium тусгай багц · дээд зэрэглэлийн орчин" },
+  console: { label: "Консол", icon: Monitor, color: "text-primary", tagline: "PS5 / Switch" },
+  room: { label: "Тусдаа өрөө", icon: Monitor, color: "text-warning", tagline: "Найз нөхөдтэйгөө" },
+};
+
+const TIER_ORDER: StationType[] = ["pc_standard", "pc_vip", "pc_vvip", "pc_stage", "pc_scorpion", "console", "room"];
+
+const fmtMnt = (n: number) => `${n.toLocaleString("mn-MN")}₮`;
 
 export default function Stations() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -40,38 +56,61 @@ export default function Stations() {
     <div className="container py-12 md:py-16">
       <div className="max-w-2xl mb-10">
         <h1 className="font-display text-4xl md:text-5xl mb-3">
-          Суудал ба <span className="text-gradient-neon">өрөө</span>
+          Үнэ ба <span className="text-gradient-neon">багц</span>
         </h1>
         <p className="text-muted-foreground">
-          Зэвсгээ сонго. Энгийн тоглоомд энгийн PC, тэмцээнд VIP машин,
-          хосоор тоглоход консол, найзуудтайгаа байхад тусдаа өрөө.
+          HALL-аас SCORPION хүртэл — өөрийн түвшинд тохирох суудлаа сонго.
+          Бүх PC-д Alienware дэлгэц, шинэ үеийн төхөөрөмж.
         </p>
+      </div>
+
+      {/* Packages strip */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-12">
+        <Card className="p-4 bg-gradient-to-br from-primary/15 to-transparent border-primary/40">
+          <p className="text-xs text-muted-foreground mb-1">NIGHT PASS</p>
+          <p className="font-display text-xl">30,000₮ <span className="text-sm text-muted-foreground">/ 10ц</span></p>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-secondary/15 to-transparent border-secondary/40">
+          <p className="text-xs text-muted-foreground mb-1">VIP — NP</p>
+          <p className="font-display text-xl">35,000₮ <span className="text-sm text-muted-foreground">/ 10ц</span></p>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-accent/15 to-transparent border-accent/40">
+          <p className="text-xs text-muted-foreground mb-1">VVIP — NP</p>
+          <p className="font-display text-xl">40,000₮ <span className="text-sm text-muted-foreground">/ 10ц</span></p>
+        </Card>
+        <Card className="p-4 bg-gradient-to-br from-warning/15 to-transparent border-warning/40">
+          <p className="text-xs text-muted-foreground mb-1">SCORPION</p>
+          <p className="font-display text-xl">50,000₮ <span className="text-sm text-muted-foreground">/ 1ц</span></p>
+        </Card>
       </div>
 
       {loading && <p className="text-muted-foreground">Суудлуудыг ачаалж байна…</p>}
 
-      {(["pc_standard", "pc_vip", "console", "room"] as const).map((type) => {
+      {TIER_ORDER.map((type) => {
         const items = grouped[type] ?? [];
         if (!items.length) return null;
         const info = TYPE_INFO[type];
         const Icon = info.icon;
+        const rate = items[0].hourly_rate;
         return (
           <section key={type} className="mb-12">
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               <Icon className={`h-6 w-6 ${info.color}`} />
               <h2 className="font-display text-2xl">{info.label}</h2>
-              <Badge variant="outline" className="ml-auto">{items.length} боломжтой</Badge>
+              <span className="font-bold text-secondary">{fmtMnt(rate)} <span className="text-xs text-muted-foreground font-normal">/ 1 цаг</span></span>
+              <Badge variant="outline" className="ml-auto">{items.length} суудал</Badge>
             </div>
+            <p className="text-sm text-muted-foreground mb-5">{info.tagline}</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {items.map((s) => (
                 <Card key={s.id} className="p-5 bg-card/60 border-border/60 hover:border-primary/50 transition-all hover:-translate-y-0.5">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="font-display text-lg">{s.name}</h3>
-                    <span className="text-secondary font-bold">${s.hourly_rate}/цаг</span>
+                    <span className="text-secondary font-bold text-sm">{fmtMnt(s.hourly_rate)}/ц</span>
                   </div>
-                  {s.description && <p className="text-sm text-muted-foreground mb-3">{s.description}</p>}
+                  {s.description && <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{s.description}</p>}
                   <div className="flex items-center justify-between mt-4">
-                    <span className="text-xs text-muted-foreground">Суудал: {s.capacity}</span>
+                    <span className="text-xs text-muted-foreground">Багтаамж: {s.capacity}</span>
                     <Button asChild size="sm" variant="outline">
                       <Link to={`/dashboard/book?station=${s.id}`}>Захиалах</Link>
                     </Button>
@@ -82,6 +121,29 @@ export default function Stations() {
           </section>
         );
       })}
+
+      {/* Bonus / top-up promo */}
+      <section className="mt-4">
+        <h2 className="font-display text-2xl mb-5 border-l-4 border-accent pl-3">
+          Цэнэглэлтийн <span className="text-gradient-neon">урамшуулал</span>
+        </h2>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {[
+            { pay: 20000, bonus: 20 },
+            { pay: 30000, bonus: 30 },
+            { pay: 50000, bonus: 50 },
+          ].map((b) => (
+            <Card key={b.pay} className="p-6 bg-gradient-to-br from-accent/10 to-card border-accent/40 text-center">
+              <p className="text-xs text-accent uppercase tracking-wider mb-2">SALE</p>
+              <p className="font-display text-3xl mb-1">{fmtMnt(b.pay)}</p>
+              <p className="text-secondary font-bold">+{b.bonus}% БОНУС</p>
+              <p className="text-xs text-muted-foreground mt-3">
+                Нийт {fmtMnt(b.pay + (b.pay * b.bonus) / 100)} хэтэвчинд
+              </p>
+            </Card>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
