@@ -28,15 +28,15 @@ export default function Menu() {
       <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
         <div className="max-w-2xl">
           <h1 className="font-display text-4xl md:text-5xl mb-3">
-            The <span className="text-gradient-neon">Menu</span>
+            Хоолны <span className="text-gradient-neon">цэс</span>
           </h1>
           <p className="text-muted-foreground">
-            Hot ramen, classic Japanese plates, snacks and drinks — delivered to your seat while you play.
+            Халуун рамэн, япон сонгодог хоол, зууш, ундаа — тоглож байх зуур чинь суудал дээр чинь хүргэгдэнэ.
           </p>
         </div>
         <Button asChild className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
           <Link to={user ? "/dashboard/order" : "/auth?next=/dashboard/order"}>
-            {user ? "Order to my seat" : "Sign in to order"}
+            {user ? "Суудалдаа захиалах" : "Захиалахын тулд нэвтрэх"}
           </Link>
         </Button>
       </div>

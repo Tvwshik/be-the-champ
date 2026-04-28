@@ -13,6 +13,13 @@ import { Badge } from "@/components/ui/badge";
 type Item = { id: string; name: string; description: string | null; price: number; category_id: string | null };
 type Cat = { id: string; name: string };
 
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  received: "хүлээн авсан",
+  preparing: "бэлтгэж буй",
+  delivered: "хүргэгдсэн",
+  cancelled: "цуцалсан",
+};
+
 export default function OrderPage() {
   const { user } = useAuth();
   const [cats, setCats] = useState<Cat[]>([]);
@@ -59,8 +66,8 @@ export default function OrderPage() {
   }
 
   async function placeOrder() {
-    if (Object.keys(cart).length === 0) { toast({ title: "Cart is empty", variant: "destructive" }); return; }
-    if (!stationId && !seatLabel.trim()) { toast({ title: "Tell us your seat", description: "Pick a station or type a seat label.", variant: "destructive" }); return; }
+    if (Object.keys(cart).length === 0) { toast({ title: "Сагс хоосон байна", variant: "destructive" }); return; }
+    if (!stationId && !seatLabel.trim()) { toast({ title: "Суудлаа мэдэгдээрэй", description: "Суудал сонгох эсвэл суудлын дугаараа бичнэ үү.", variant: "destructive" }); return; }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("place-order", {
       body: {
@@ -72,18 +79,18 @@ export default function OrderPage() {
     });
     setBusy(false);
     if (error || (data as any)?.error) {
-      toast({ title: "Order failed", description: (data as any)?.error || error?.message, variant: "destructive" });
+      toast({ title: "Захиалга амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Order received!", description: `Charged $${(data as any).total.toFixed(2)}.` });
+    toast({ title: "Захиалга хүлээж авлаа!", description: `$${(data as any).total.toFixed(2)} төлөгдлөө.` });
     setCart({}); setNotes("");
     refreshOrders();
   }
 
   return (
     <div>
-      <h1 className="font-display text-3xl mb-2">Order Food</h1>
-      <p className="text-muted-foreground mb-6">Hot ramen, snacks, and drinks delivered to your seat.</p>
+      <h1 className="font-display text-3xl mb-2">Хоол захиалах</h1>
+      <p className="text-muted-foreground mb-6">Халуун рамэн, зууш, ундааг суудал дээр чинь хүргэнэ.</p>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6">
         <div className="space-y-8">
@@ -105,7 +112,7 @@ export default function OrderPage() {
                         </div>
                         {qty === 0 ? (
                           <Button size="sm" variant="outline" onClick={() => setQty(it.id, 1)}>
-                            <Plus className="h-3 w-3" />Add
+                            <Plus className="h-3 w-3" />Нэмэх
                           </Button>
                         ) : (
                           <div className="flex items-center gap-1">
@@ -125,9 +132,9 @@ export default function OrderPage() {
 
         <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
           <Card className="p-5">
-            <h2 className="font-display text-lg mb-4 flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-primary" /> Your cart</h2>
+            <h2 className="font-display text-lg mb-4 flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-primary" /> Таны сагс</h2>
             {Object.keys(cart).length === 0 ? (
-              <p className="text-sm text-muted-foreground mb-4">Cart is empty.</p>
+              <p className="text-sm text-muted-foreground mb-4">Сагс хоосон байна.</p>
             ) : (
               <div className="space-y-2 mb-4">
                 {Object.entries(cart).map(([id, qty]) => {
@@ -148,43 +155,43 @@ export default function OrderPage() {
 
             <div className="space-y-3 border-t border-border/40 pt-4">
               <div className="space-y-1">
-                <Label>Deliver to station</Label>
+                <Label>Хүргэх суудал</Label>
                 <Select value={stationId} onValueChange={(v) => { setStationId(v); setSeatLabel(""); }}>
-                  <SelectTrigger><SelectValue placeholder="Pick station…" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Суудал сонгох…" /></SelectTrigger>
                   <SelectContent>{stations.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <p className="text-center text-xs text-muted-foreground">— or —</p>
+              <p className="text-center text-xs text-muted-foreground">— эсвэл —</p>
               <div className="space-y-1">
-                <Label>Seat label</Label>
-                <Input value={seatLabel} onChange={(e) => { setSeatLabel(e.target.value); if (e.target.value) setStationId(""); }} placeholder="e.g. PC-09" maxLength={50} />
+                <Label>Суудлын дугаар</Label>
+                <Input value={seatLabel} onChange={(e) => { setSeatLabel(e.target.value); if (e.target.value) setStationId(""); }} placeholder="ж.нь PC-09" maxLength={50} />
               </div>
               <div className="space-y-1">
-                <Label>Notes (optional)</Label>
-                <Input value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder="Extra spice…" />
+                <Label>Тэмдэглэл (заавал биш)</Label>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={300} placeholder="Илүү халуун ногоотой…" />
               </div>
             </div>
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
-              <span className="text-muted-foreground">Total</span>
+              <span className="text-muted-foreground">Нийт</span>
               <span className="font-display text-2xl text-secondary">${total.toFixed(2)}</span>
             </div>
             <Button onClick={placeOrder} disabled={busy || total === 0} className="w-full mt-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
-              {busy ? "Sending…" : "Pay from wallet"}
+              {busy ? "Илгээж байна…" : "Хэтэвчээс төлөх"}
             </Button>
           </Card>
 
           {orders.length > 0 && (
             <Card className="p-5">
-              <h2 className="font-display text-lg mb-3">Recent orders</h2>
+              <h2 className="font-display text-lg mb-3">Сүүлийн захиалгууд</h2>
               <div className="space-y-3">
                 {orders.map((o) => (
                   <div key={o.id} className="text-sm border-b border-border/40 pb-2 last:border-0">
                     <div className="flex justify-between">
                       <span className="font-mono">#{o.id.slice(0, 6).toUpperCase()}</span>
-                      <Badge variant={o.status === "delivered" ? "default" : "outline"} className="capitalize">{o.status}</Badge>
+                      <Badge variant={o.status === "delivered" ? "default" : "outline"} className="capitalize">{ORDER_STATUS_LABEL[o.status] ?? o.status}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">${Number(o.total).toFixed(2)} · {o.order_items?.length} items</p>
+                    <p className="text-xs text-muted-foreground mt-1">${Number(o.total).toFixed(2)} · {o.order_items?.length} зүйл</p>
                   </div>
                 ))}
               </div>

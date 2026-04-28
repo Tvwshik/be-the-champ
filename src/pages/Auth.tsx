@@ -12,8 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 
 const schema = z.object({
-  email: z.string().trim().email("Invalid email").max(255),
-  password: z.string().min(6, "Password must be at least 6 characters").max(72),
+  email: z.string().trim().email("И-мэйл буруу байна").max(255),
+  password: z.string().min(6, "Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой").max(72),
   full_name: z.string().trim().min(1).max(100).optional(),
 });
 
@@ -36,7 +36,7 @@ export default function Auth() {
     e.preventDefault();
     const parsed = schema.safeParse({ email, password, full_name: mode === "signup" ? fullName : undefined });
     if (!parsed.success) {
-      toast({ title: "Check your input", description: parsed.error.issues[0].message, variant: "destructive" });
+      toast({ title: "Мэдээллээ шалгана уу", description: parsed.error.issues[0].message, variant: "destructive" });
       return;
     }
     setBusy(true);
@@ -50,15 +50,15 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        toast({ title: "Welcome to Be The Champ!", description: "Account created." });
+        toast({ title: "Be The Champ-д тавтай морил!", description: "Бүртгэл үүсгэгдлээ." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast({ title: "Logged in", description: "Game on." });
+        toast({ title: "Нэвтэрлээ", description: "Тоглоомоо эхлүүл." });
       }
       navigate(next, { replace: true });
     } catch (err: any) {
-      toast({ title: "Auth error", description: err.message ?? String(err), variant: "destructive" });
+      toast({ title: "Нэвтрэх алдаа", description: err.message ?? String(err), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -68,7 +68,7 @@ export default function Auth() {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + next });
     if (result.error) {
-      toast({ title: "Google sign-in failed", description: String((result.error as any).message ?? result.error), variant: "destructive" });
+      toast({ title: "Google-р нэвтрэх амжилтгүй боллоо", description: String((result.error as any).message ?? result.error), variant: "destructive" });
       setBusy(false);
       return;
     }
@@ -81,51 +81,51 @@ export default function Auth() {
       <Card className="w-full max-w-md p-8 bg-card/80 border-border/60 backdrop-blur">
         <div className="flex flex-col items-center mb-6">
           <Trophy className="h-10 w-10 text-primary mb-2" />
-          <h1 className="font-display text-2xl">{mode === "login" ? "Welcome back" : "Join the Champs"}</h1>
+          <h1 className="font-display text-2xl">{mode === "login" ? "Эргэн тавтай морил" : "Аваргуудтай нэгдээрэй"}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {mode === "login" ? "Sign in to your member account" : "Create your member account"}
+            {mode === "login" ? "Гишүүний бүртгэлээрээ нэвтэр" : "Гишүүний бүртгэл үүсгэх"}
           </p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
           {mode === "signup" && (
             <div className="space-y-2">
-              <Label htmlFor="name">Full name</Label>
+              <Label htmlFor="name">Бүтэн нэр</Label>
               <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={100} required />
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">И-мэйл</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Нууц үг</Label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} maxLength={72} />
           </div>
 
           <Button type="submit" disabled={busy} className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
-            {busy ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}
+            {busy ? "Түр хүлээнэ үү…" : mode === "login" ? "Нэвтрэх" : "Бүртгэл үүсгэх"}
           </Button>
         </form>
 
         <div className="my-5 flex items-center gap-2">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">OR</span>
+          <span className="text-xs text-muted-foreground">ЭСВЭЛ</span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
         <Button variant="outline" className="w-full" onClick={googleSignIn} disabled={busy}>
-          Continue with Google
+          Google-р үргэлжлүүлэх
         </Button>
 
         <p className="text-sm text-center text-muted-foreground mt-6">
-          {mode === "login" ? "New here?" : "Already a member?"}{" "}
+          {mode === "login" ? "Шинэ хэрэглэгч үү?" : "Бүртгэлтэй гишүүн үү?"}{" "}
           <button className="text-primary hover:underline" onClick={() => setMode(mode === "login" ? "signup" : "login")}>
-            {mode === "login" ? "Create an account" : "Log in"}
+            {mode === "login" ? "Бүртгэл үүсгэх" : "Нэвтрэх"}
           </button>
         </p>
         <p className="text-center text-xs text-muted-foreground mt-3">
-          <Link to="/" className="hover:text-foreground">← Back home</Link>
+          <Link to="/" className="hover:text-foreground">← Нүүр хуудас руу буцах</Link>
         </p>
       </Card>
     </div>
