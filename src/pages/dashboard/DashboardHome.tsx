@@ -27,47 +27,47 @@ export default function DashboardHome() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl mb-2">Welcome{name ? `, ${name.split(" ")[0]}` : ""} 👋</h1>
-      <p className="text-muted-foreground mb-8">Your member command center.</p>
+      <h1 className="font-display text-3xl mb-2">Тавтай морил{name ? `, ${name.split(" ")[0]}` : ""} 👋</h1>
+      <p className="text-muted-foreground mb-8">Таны гишүүний удирдах төв.</p>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <Card className="p-5 bg-gradient-to-br from-primary/20 to-secondary/10 border-primary/30 glow-cyan">
           <div className="flex items-center justify-between mb-2">
             <Wallet className="h-5 w-5 text-primary" />
-            <span className="text-xs text-muted-foreground">Wallet</span>
+            <span className="text-xs text-muted-foreground">Хэтэвч</span>
           </div>
           <p className="font-display text-3xl">${balance.toFixed(2)}</p>
           <Button asChild variant="outline" size="sm" className="mt-3 w-full">
-            <Link to="/dashboard/wallet">Top up <ArrowRight className="h-3 w-3" /></Link>
+            <Link to="/dashboard/wallet">Цэнэглэх <ArrowRight className="h-3 w-3" /></Link>
           </Button>
         </Card>
         <Card className="p-5">
           <div className="flex items-center justify-between mb-2">
             <Calendar className="h-5 w-5 text-secondary" />
-            <span className="text-xs text-muted-foreground">Upcoming bookings</span>
+            <span className="text-xs text-muted-foreground">Удахгүй болох захиалга</span>
           </div>
           <p className="font-display text-3xl">{bookings.length}</p>
           <Button asChild variant="outline" size="sm" className="mt-3 w-full">
-            <Link to="/dashboard/book">Book seat <ArrowRight className="h-3 w-3" /></Link>
+            <Link to="/dashboard/book">Суудал захиалах <ArrowRight className="h-3 w-3" /></Link>
           </Button>
         </Card>
         <Card className="p-5">
           <div className="flex items-center justify-between mb-2">
             <UtensilsCrossed className="h-5 w-5 text-accent" />
-            <span className="text-xs text-muted-foreground">Recent orders</span>
+            <span className="text-xs text-muted-foreground">Сүүлийн захиалгууд</span>
           </div>
           <p className="font-display text-3xl">{orders.length}</p>
           <Button asChild variant="outline" size="sm" className="mt-3 w-full">
-            <Link to="/dashboard/order">Order <ArrowRight className="h-3 w-3" /></Link>
+            <Link to="/dashboard/order">Захиалах <ArrowRight className="h-3 w-3" /></Link>
           </Button>
         </Card>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="p-5">
-          <h2 className="font-display text-lg mb-4">Upcoming bookings</h2>
+          <h2 className="font-display text-lg mb-4">Удахгүй болох захиалгууд</h2>
           {bookings.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No upcoming bookings.</p>
+            <p className="text-sm text-muted-foreground">Удахгүй болох захиалга алга.</p>
           ) : bookings.map((b) => (
             <div key={b.id} className="py-2 border-b border-border/40 last:border-0 flex items-center justify-between">
               <div>
@@ -81,13 +81,13 @@ export default function DashboardHome() {
           ))}
         </Card>
         <Card className="p-5">
-          <h2 className="font-display text-lg mb-4">Recent orders</h2>
+          <h2 className="font-display text-lg mb-4">Сүүлийн захиалгууд</h2>
           {orders.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No orders yet.</p>
+            <p className="text-sm text-muted-foreground">Захиалга байхгүй.</p>
           ) : orders.map((o) => (
             <div key={o.id} className="py-2 border-b border-border/40 last:border-0 flex items-center justify-between">
               <div>
-                <p className="font-medium">Order #{o.id.slice(0, 6).toUpperCase()}</p>
+                <p className="font-medium">Захиалга #{o.id.slice(0, 6).toUpperCase()}</p>
                 <p className="text-xs text-muted-foreground capitalize">
                   {o.status.replace("_", " ")} · {new Date(o.created_at).toLocaleString()}
                 </p>

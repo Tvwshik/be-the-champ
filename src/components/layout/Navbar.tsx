@@ -6,10 +6,10 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { to: "/", label: "Home" },
-  { to: "/stations", label: "Stations" },
-  { to: "/menu", label: "Menu" },
-  { to: "/contact", label: "Contact" },
+  { to: "/", label: "Нүүр" },
+  { to: "/stations", label: "Суудлууд" },
+  { to: "/menu", label: "Цэс" },
+  { to: "/contact", label: "Холбоо барих" },
 ];
 
 export function Navbar() {
@@ -51,21 +51,21 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
-              <Button asChild variant="ghost" size="sm"><Link to="/dashboard">Dashboard</Link></Button>
-              {isStaff && <Button asChild variant="ghost" size="sm"><Link to="/admin">Admin</Link></Button>}
-              <Button variant="outline" size="sm" onClick={handleSignOut}>Sign out</Button>
+              <Button asChild variant="ghost" size="sm"><Link to="/dashboard">Хэсэг</Link></Button>
+              {isStaff && <Button asChild variant="ghost" size="sm"><Link to="/admin">Админ</Link></Button>}
+              <Button variant="outline" size="sm" onClick={handleSignOut}>Гарах</Button>
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm"><Link to="/auth">Log in</Link></Button>
+              <Button asChild variant="ghost" size="sm"><Link to="/auth">Нэвтрэх</Link></Button>
               <Button asChild size="sm" className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
-                <Link to="/auth?mode=signup">Join Now</Link>
+                <Link to="/auth?mode=signup">Бүртгүүлэх</Link>
               </Button>
             </>
           )}
         </div>
 
-        <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-label="Menu">
+        <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-label="Цэс">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
@@ -89,15 +89,15 @@ export function Navbar() {
             <div className="border-t border-border/40 mt-2 pt-2 flex flex-col gap-2">
               {user ? (
                 <>
-                  <Button asChild variant="ghost" onClick={() => setOpen(false)}><Link to="/dashboard">Dashboard</Link></Button>
-                  {isStaff && <Button asChild variant="ghost" onClick={() => setOpen(false)}><Link to="/admin">Admin</Link></Button>}
-                  <Button variant="outline" onClick={handleSignOut}>Sign out</Button>
+                  <Button asChild variant="ghost" onClick={() => setOpen(false)}><Link to="/dashboard">Хэсэг</Link></Button>
+                  {isStaff && <Button asChild variant="ghost" onClick={() => setOpen(false)}><Link to="/admin">Админ</Link></Button>}
+                  <Button variant="outline" onClick={handleSignOut}>Гарах</Button>
                 </>
               ) : (
                 <>
-                  <Button asChild variant="ghost" onClick={() => setOpen(false)}><Link to="/auth">Log in</Link></Button>
+                  <Button asChild variant="ghost" onClick={() => setOpen(false)}><Link to="/auth">Нэвтрэх</Link></Button>
                   <Button asChild className="bg-gradient-to-r from-primary to-secondary text-primary-foreground" onClick={() => setOpen(false)}>
-                    <Link to="/auth?mode=signup">Join Now</Link>
+                    <Link to="/auth?mode=signup">Бүртгүүлэх</Link>
                   </Button>
                 </>
               )}

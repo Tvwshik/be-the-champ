@@ -9,22 +9,36 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  received: "хүлээн авсан",
+  preparing: "бэлтгэж буй",
+  delivered: "хүргэгдсэн",
+  cancelled: "цуцалсан",
+};
+const BOOKING_STATUS_LABEL: Record<string, string> = {
+  pending: "хүлээгдэж буй",
+  confirmed: "баталгаажсан",
+  checked_in: "ирсэн",
+  completed: "дууссан",
+  cancelled: "цуцалсан",
+};
+
 export default function AdminPage() {
   const [tab, setTab] = useState("orders");
 
   return (
     <div className="container py-8">
-      <h1 className="font-display text-3xl mb-2">Staff Admin</h1>
-      <p className="text-muted-foreground mb-6">Manage orders, bookings, top-ups, members and menu.</p>
+      <h1 className="font-display text-3xl mb-2">Ажилтны админ</h1>
+      <p className="text-muted-foreground mb-6">Захиалга, суудлын захиалга, цэнэглэлт, гишүүд, цэс удирдах.</p>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="orders">Orders queue</TabsTrigger>
-          <TabsTrigger value="bookings">Bookings</TabsTrigger>
-          <TabsTrigger value="topups">Top-up requests</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="menu">Menu</TabsTrigger>
-          <TabsTrigger value="stations">Stations</TabsTrigger>
+          <TabsTrigger value="orders">Захиалгын дараалал</TabsTrigger>
+          <TabsTrigger value="bookings">Суудлын захиалга</TabsTrigger>
+          <TabsTrigger value="topups">Цэнэглэх хүсэлт</TabsTrigger>
+          <TabsTrigger value="members">Гишүүд</TabsTrigger>
+          <TabsTrigger value="menu">Цэс</TabsTrigger>
+          <TabsTrigger value="stations">Суудлууд</TabsTrigger>
         </TabsList>
         <TabsContent value="orders"><OrdersQueue /></TabsContent>
         <TabsContent value="bookings"><BookingsAdmin /></TabsContent>
@@ -44,30 +58,30 @@ function OrdersQueue() {
   useEffect(() => { load(); const t = setInterval(load, 10_000); return () => clearInterval(t); }, []);
   const setStatus = async (id: string, status: "received" | "preparing" | "delivered" | "cancelled") => {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: `Order ${status}` }); load(); }
+    if (error) toast({ title: "Алдаа", description: error.message, variant: "destructive" });
+    else { toast({ title: `Захиалга: ${ORDER_STATUS_LABEL[status]}` }); load(); }
   };
   return (
     <Card className="p-5 mt-4">
-      {orders.length === 0 ? <p className="text-sm text-muted-foreground">No active orders.</p> : (
+      {orders.length === 0 ? <p className="text-sm text-muted-foreground">Идэвхтэй захиалга алга.</p> : (
         <div className="space-y-3">
           {orders.map((o) => (
             <div key={o.id} className="border border-border/40 rounded-lg p-4">
               <div className="flex items-start justify-between mb-2 gap-3">
                 <div>
-                  <p className="font-semibold">#{o.id.slice(0, 6).toUpperCase()} · {o.profiles?.full_name ?? "Member"}</p>
-                  <p className="text-xs text-muted-foreground">Seat: {o.stations?.name ?? o.seat_label ?? "—"} · ${Number(o.total).toFixed(2)} · {new Date(o.created_at).toLocaleTimeString()}</p>
+                  <p className="font-semibold">#{o.id.slice(0, 6).toUpperCase()} · {o.profiles?.full_name ?? "Гишүүн"}</p>
+                  <p className="text-xs text-muted-foreground">Суудал: {o.stations?.name ?? o.seat_label ?? "—"} · ${Number(o.total).toFixed(2)} · {new Date(o.created_at).toLocaleTimeString()}</p>
                 </div>
-                <Badge variant={o.status === "received" ? "outline" : "default"}>{o.status}</Badge>
+                <Badge variant={o.status === "received" ? "outline" : "default"}>{ORDER_STATUS_LABEL[o.status] ?? o.status}</Badge>
               </div>
               <ul className="text-sm mb-3 ml-4 list-disc">
                 {o.order_items.map((i: any) => <li key={i.id}>{i.quantity}× {i.name}</li>)}
               </ul>
-              {o.notes && <p className="text-xs text-muted-foreground italic mb-2">Note: {o.notes}</p>}
+              {o.notes && <p className="text-xs text-muted-foreground italic mb-2">Тэмдэглэл: {o.notes}</p>}
               <div className="flex gap-2 flex-wrap">
-                {o.status === "received" && <Button size="sm" onClick={() => setStatus(o.id, "preparing")}>Start preparing</Button>}
-                {o.status === "preparing" && <Button size="sm" onClick={() => setStatus(o.id, "delivered")}>Mark delivered</Button>}
-                <Button size="sm" variant="outline" onClick={() => setStatus(o.id, "cancelled")}>Cancel</Button>
+                {o.status === "received" && <Button size="sm" onClick={() => setStatus(o.id, "preparing")}>Бэлтгэж эхлэх</Button>}
+                {o.status === "preparing" && <Button size="sm" onClick={() => setStatus(o.id, "delivered")}>Хүргэгдсэн гэж тэмдэглэх</Button>}
+                <Button size="sm" variant="outline" onClick={() => setStatus(o.id, "cancelled")}>Цуцлах</Button>
               </div>
             </div>
           ))}
@@ -85,11 +99,11 @@ function BookingsAdmin() {
   useEffect(() => { load(); }, []);
   const setStatus = async (id: string, status: "pending" | "confirmed" | "checked_in" | "completed" | "cancelled") => {
     await supabase.from("bookings").update({ status }).eq("id", id);
-    toast({ title: `Booking ${status}` }); load();
+    toast({ title: `Захиалга: ${BOOKING_STATUS_LABEL[status]}` }); load();
   };
   return (
     <Card className="p-5 mt-4">
-      {bookings.length === 0 ? <p className="text-sm text-muted-foreground">No bookings.</p> : (
+      {bookings.length === 0 ? <p className="text-sm text-muted-foreground">Захиалга алга.</p> : (
         <div className="space-y-2">
           {bookings.map((b) => (
             <div key={b.id} className="flex items-center justify-between gap-3 p-3 border border-border/40 rounded-md flex-wrap">
@@ -98,10 +112,10 @@ function BookingsAdmin() {
                 <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString()} · ${Number(b.total_cost).toFixed(2)}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline">{b.status}</Badge>
-                {b.status === "confirmed" && <Button size="sm" onClick={() => setStatus(b.id, "checked_in")}>Check in</Button>}
-                {b.status === "checked_in" && <Button size="sm" onClick={() => setStatus(b.id, "completed")}>Complete</Button>}
-                {b.status !== "cancelled" && b.status !== "completed" && <Button size="sm" variant="outline" onClick={() => setStatus(b.id, "cancelled")}>Cancel</Button>}
+                <Badge variant="outline">{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge>
+                {b.status === "confirmed" && <Button size="sm" onClick={() => setStatus(b.id, "checked_in")}>Бүртгэх</Button>}
+                {b.status === "checked_in" && <Button size="sm" onClick={() => setStatus(b.id, "completed")}>Дуусгах</Button>}
+                {b.status !== "cancelled" && b.status !== "completed" && <Button size="sm" variant="outline" onClick={() => setStatus(b.id, "cancelled")}>Цуцлах</Button>}
               </div>
             </div>
           ))}
@@ -118,22 +132,22 @@ function TopupsAdmin() {
   useEffect(() => { load(); }, []);
   const resolve = async (id: string, action: "approve" | "reject") => {
     const { error, data } = await supabase.functions.invoke("resolve-topup", { body: { request_id: id, action } });
-    if (error || (data as any)?.error) toast({ title: "Failed", description: (data as any)?.error || error?.message, variant: "destructive" });
-    else { toast({ title: `Top-up ${action}d` }); load(); }
+    if (error || (data as any)?.error) toast({ title: "Амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
+    else { toast({ title: action === "approve" ? "Цэнэглэлт баталгаажлаа" : "Цэнэглэлт татгалзлаа" }); load(); }
   };
   return (
     <Card className="p-5 mt-4">
-      {reqs.length === 0 ? <p className="text-sm text-muted-foreground">No pending requests.</p> : (
+      {reqs.length === 0 ? <p className="text-sm text-muted-foreground">Хүлээгдэж буй хүсэлт алга.</p> : (
         <div className="space-y-2">
           {reqs.map((r) => (
             <div key={r.id} className="flex items-center justify-between gap-3 p-3 border border-border/40 rounded-md">
               <div>
                 <p className="font-mono font-bold tracking-widest">{r.code}</p>
-                <p className="text-xs text-muted-foreground">{r.profiles?.full_name ?? "Member"} · ${Number(r.amount).toFixed(2)} · {new Date(r.created_at).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">{r.profiles?.full_name ?? "Гишүүн"} · ${Number(r.amount).toFixed(2)} · {new Date(r.created_at).toLocaleString()}</p>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => resolve(r.id, "approve")}>Approve</Button>
-                <Button size="sm" variant="outline" onClick={() => resolve(r.id, "reject")}>Reject</Button>
+                <Button size="sm" onClick={() => resolve(r.id, "approve")}>Зөвшөөрөх</Button>
+                <Button size="sm" variant="outline" onClick={() => resolve(r.id, "reject")}>Татгалзах</Button>
               </div>
             </div>
           ))}
@@ -148,7 +162,7 @@ function MembersAdmin() {
   const [q, setQ] = useState("");
   const [adjUser, setAdjUser] = useState<string>("");
   const [adjAmount, setAdjAmount] = useState("");
-  const [adjDesc, setAdjDesc] = useState("In-store cash top-up");
+  const [adjDesc, setAdjDesc] = useState("Касс дээр бэлэн мөнгөөр цэнэглэв");
   const load = () => {
     let query = supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(50);
     if (q) query = query.ilike("full_name", `%${q}%`);
@@ -161,38 +175,38 @@ function MembersAdmin() {
     const { data, error } = await supabase.functions.invoke("staff-adjust-wallet", {
       body: { user_id: adjUser, amount: amt, description: adjDesc },
     });
-    if (error || (data as any)?.error) toast({ title: "Failed", description: (data as any)?.error || error?.message, variant: "destructive" });
-    else { toast({ title: "Wallet updated", description: `New balance: $${(data as any).balance.toFixed(2)}` }); setAdjAmount(""); load(); }
+    if (error || (data as any)?.error) toast({ title: "Амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
+    else { toast({ title: "Хэтэвч шинэчлэгдлээ", description: `Шинэ үлдэгдэл: $${(data as any).balance.toFixed(2)}` }); setAdjAmount(""); load(); }
   };
   return (
     <div className="mt-4 space-y-4">
       <Card className="p-5">
-        <h3 className="font-display text-lg mb-3">Adjust wallet (cash top-up / refund)</h3>
+        <h3 className="font-display text-lg mb-3">Хэтэвч засах (бэлэн цэнэглэх / буцаалт)</h3>
         <div className="grid md:grid-cols-4 gap-3">
           <div>
-            <Label>Member</Label>
+            <Label>Гишүүн</Label>
             <Select value={adjUser} onValueChange={setAdjUser}>
-              <SelectTrigger><SelectValue placeholder="Pick…" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Сонгох…" /></SelectTrigger>
               <SelectContent>{members.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name || m.id.slice(0, 8)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div><Label>Amount (+/-)</Label><Input type="number" value={adjAmount} onChange={(e) => setAdjAmount(e.target.value)} /></div>
-          <div><Label>Description</Label><Input value={adjDesc} onChange={(e) => setAdjDesc(e.target.value)} /></div>
-          <Button onClick={adjust} className="self-end">Apply</Button>
+          <div><Label>Дүн (+/-)</Label><Input type="number" value={adjAmount} onChange={(e) => setAdjAmount(e.target.value)} /></div>
+          <div><Label>Тайлбар</Label><Input value={adjDesc} onChange={(e) => setAdjDesc(e.target.value)} /></div>
+          <Button onClick={adjust} className="self-end">Хэрэгжүүлэх</Button>
         </div>
       </Card>
       <Card className="p-5">
-        <Input placeholder="Search by name…" value={q} onChange={(e) => setQ(e.target.value)} className="mb-4 max-w-sm" />
+        <Input placeholder="Нэрээр хайх…" value={q} onChange={(e) => setQ(e.target.value)} className="mb-4 max-w-sm" />
         <div className="space-y-1">
           {members.map((m) => (
             <div key={m.id} className="flex items-center justify-between p-2 border-b border-border/40 last:border-0">
               <div>
                 <p className="font-semibold">{m.full_name || "—"}</p>
-                <p className="text-xs text-muted-foreground">{m.phone ?? "no phone"} · joined {new Date(m.created_at).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground">{m.phone ?? "утас алга"} · бүртгүүлсэн {new Date(m.created_at).toLocaleDateString()}</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-secondary">${Number(m.wallet_balance).toFixed(2)}</p>
-                {m.is_suspended && <Badge variant="destructive">Suspended</Badge>}
+                {m.is_suspended && <Badge variant="destructive">Түр хаагдсан</Badge>}
               </div>
             </div>
           ))}
@@ -214,7 +228,7 @@ function MenuAdmin() {
   const add = async () => {
     if (!name || !price || !catId) return;
     const { error } = await supabase.from("menu_items").insert({ name, price: Number(price), category_id: catId });
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) toast({ title: "Алдаа", description: error.message, variant: "destructive" });
     else { setName(""); setPrice(""); load(); }
   };
   const toggle = async (id: string, available: boolean) => {
@@ -224,15 +238,15 @@ function MenuAdmin() {
   return (
     <div className="mt-4 space-y-4">
       <Card className="p-5">
-        <h3 className="font-display text-lg mb-3">Add menu item</h3>
+        <h3 className="font-display text-lg mb-3">Цэсэнд хоол нэмэх</h3>
         <div className="grid md:grid-cols-4 gap-3">
-          <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input placeholder="Price" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <Input placeholder="Нэр" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input placeholder="Үнэ" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
           <Select value={catId} onValueChange={setCatId}>
-            <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Ангилал" /></SelectTrigger>
             <SelectContent>{cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
           </Select>
-          <Button onClick={add}>Add</Button>
+          <Button onClick={add}>Нэмэх</Button>
         </div>
       </Card>
       <Card className="p-5">
@@ -244,9 +258,9 @@ function MenuAdmin() {
                 <p className="text-xs text-muted-foreground">${Number(it.price).toFixed(2)}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={it.is_available ? "default" : "outline"}>{it.is_available ? "available" : "off"}</Badge>
-                <Button size="sm" variant="outline" onClick={() => toggle(it.id, it.is_available)}>{it.is_available ? "Disable" : "Enable"}</Button>
-                <Button size="sm" variant="ghost" onClick={() => del(it.id)}>Delete</Button>
+                <Badge variant={it.is_available ? "default" : "outline"}>{it.is_available ? "идэвхтэй" : "идэвхгүй"}</Badge>
+                <Button size="sm" variant="outline" onClick={() => toggle(it.id, it.is_available)}>{it.is_available ? "Идэвхгүй болгох" : "Идэвхжүүлэх"}</Button>
+                <Button size="sm" variant="ghost" onClick={() => del(it.id)}>Устгах</Button>
               </div>
             </div>
           ))}
@@ -265,17 +279,17 @@ function StationsAdmin() {
   };
   return (
     <Card className="p-5 mt-4">
-      <p className="text-sm text-muted-foreground mb-3">Stations are seeded — toggle availability here.</p>
+      <p className="text-sm text-muted-foreground mb-3">Суудлууд бэлэн оруулагдсан — энд боломжийг асаах/унтраах боломжтой.</p>
       <div className="space-y-1">
         {stations.map((s) => (
           <div key={s.id} className="flex items-center justify-between p-2 border-b border-border/40 last:border-0">
             <div>
               <p className="font-semibold">{s.name}</p>
-              <p className="text-xs text-muted-foreground">{s.type} · ${Number(s.hourly_rate).toFixed(2)}/h · seats {s.capacity}</p>
+              <p className="text-xs text-muted-foreground">{s.type} · ${Number(s.hourly_rate).toFixed(2)}/ц · суудал {s.capacity}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={s.is_active ? "default" : "outline"}>{s.is_active ? "active" : "off"}</Badge>
-              <Button size="sm" variant="outline" onClick={() => toggle(s.id, s.is_active)}>{s.is_active ? "Disable" : "Enable"}</Button>
+              <Badge variant={s.is_active ? "default" : "outline"}>{s.is_active ? "идэвхтэй" : "идэвхгүй"}</Badge>
+              <Button size="sm" variant="outline" onClick={() => toggle(s.id, s.is_active)}>{s.is_active ? "Идэвхгүй болгох" : "Идэвхжүүлэх"}</Button>
             </div>
           </div>
         ))}

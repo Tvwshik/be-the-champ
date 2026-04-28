@@ -9,6 +9,12 @@ import { toast } from "@/hooks/use-toast";
 import { Wallet as WalletIcon, Plus, Clock, Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+const STATUS_LABEL: Record<string, string> = {
+  pending: "хүлээгдэж буй",
+  approved: "баталгаажсан",
+  rejected: "татгалзсан",
+};
+
 export default function WalletPage() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
@@ -33,44 +39,44 @@ export default function WalletPage() {
 
   async function requestCash() {
     const amt = Number(amount);
-    if (!amt || amt <= 0) { toast({ title: "Invalid amount", variant: "destructive" }); return; }
+    if (!amt || amt <= 0) { toast({ title: "Дүн буруу байна", variant: "destructive" }); return; }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("create-topup-request", { body: { amount: amt } });
     setBusy(false);
     if (error || (data as any)?.error) {
-      toast({ title: "Request failed", description: (data as any)?.error || error?.message, variant: "destructive" });
+      toast({ title: "Хүсэлт амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Top-up requested", description: `Show code ${(data as any).request.code} to staff.` });
+    toast({ title: "Цэнэглэх хүсэлт илгээгдлээ", description: `Ажилтанд ${(data as any).request.code} кодыг үзүүлнэ үү.` });
     loadAll();
   }
 
   return (
     <div>
-      <h1 className="font-display text-3xl mb-2">Wallet</h1>
-      <p className="text-muted-foreground mb-6">Top up online or in store, then spend on bookings & food.</p>
+      <h1 className="font-display text-3xl mb-2">Хэтэвч</h1>
+      <p className="text-muted-foreground mb-6">Онлайн эсвэл газар дээр цэнэглээд захиалга, хоолондоо ашигла.</p>
 
       <Card className="p-6 mb-6 bg-gradient-to-br from-primary/20 to-secondary/10 border-primary/30 glow-cyan">
         <div className="flex items-center gap-3 mb-2">
           <WalletIcon className="h-6 w-6 text-primary" />
-          <span className="text-sm text-muted-foreground">Current balance</span>
+          <span className="text-sm text-muted-foreground">Одоогийн үлдэгдэл</span>
         </div>
         <p className="font-display text-5xl">${balance.toFixed(2)}</p>
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         <Card className="p-6">
-          <h2 className="font-display text-lg mb-3 flex items-center gap-2"><Plus className="h-4 w-4 text-primary" /> Online top-up</h2>
-          <p className="text-sm text-muted-foreground mb-4">Pay with card, balance updates instantly.</p>
+          <h2 className="font-display text-lg mb-3 flex items-center gap-2"><Plus className="h-4 w-4 text-primary" /> Онлайн цэнэглэх</h2>
+          <p className="text-sm text-muted-foreground mb-4">Картаар төл, үлдэгдэл шууд шинэчлэгдэнэ.</p>
           <Button disabled className="w-full" variant="outline">
-            Coming soon — set up Stripe
+            Удахгүй — Stripe тохируулах
           </Button>
-          <p className="text-xs text-muted-foreground mt-2">Ask staff to enable card payments in admin.</p>
+          <p className="text-xs text-muted-foreground mt-2">Картын төлбөрийг идэвхжүүлэхийг ажилтнаас хүсэх.</p>
         </Card>
 
         <Card className="p-6">
-          <h2 className="font-display text-lg mb-3 flex items-center gap-2"><Plus className="h-4 w-4 text-secondary" /> Cash top-up at counter</h2>
-          <p className="text-sm text-muted-foreground mb-4">Generate a code, pay cash, staff credits your wallet.</p>
+          <h2 className="font-display text-lg mb-3 flex items-center gap-2"><Plus className="h-4 w-4 text-secondary" /> Касс дээр бэлэн мөнгөөр цэнэглэх</h2>
+          <p className="text-sm text-muted-foreground mb-4">Код үүсгэ, бэлнээр төл, ажилтан таны хэтэвчийг цэнэглэнэ.</p>
           <div className="flex gap-2 mb-3">
             {[10, 20, 50, 100].map((a) => (
               <Button key={a} variant={amount === String(a) ? "default" : "outline"} size="sm" onClick={() => setAmount(String(a))}>${a}</Button>
@@ -78,17 +84,17 @@ export default function WalletPage() {
           </div>
           <div className="flex gap-2">
             <div className="flex-1 space-y-1">
-              <Label htmlFor="amt" className="sr-only">Amount</Label>
+              <Label htmlFor="amt" className="sr-only">Дүн</Label>
               <Input id="amt" type="number" min={1} max={1000} value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
-            <Button onClick={requestCash} disabled={busy}>Request</Button>
+            <Button onClick={requestCash} disabled={busy}>Хүсэх</Button>
           </div>
         </Card>
       </div>
 
       {requests.length > 0 && (
         <Card className="p-6 mb-6">
-          <h2 className="font-display text-lg mb-4">Cash top-up requests</h2>
+          <h2 className="font-display text-lg mb-4">Бэлэн мөнгөөр цэнэглэх хүсэлтүүд</h2>
           <div className="space-y-2">
             {requests.map((r) => (
               <div key={r.id} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
@@ -100,7 +106,7 @@ export default function WalletPage() {
                   {r.status === "approved" && <Check className="h-3 w-3 mr-1" />}
                   {r.status === "rejected" && <X className="h-3 w-3 mr-1" />}
                   {r.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
-                  {r.status}
+                  {STATUS_LABEL[r.status] ?? r.status}
                 </Badge>
               </div>
             ))}
@@ -109,9 +115,9 @@ export default function WalletPage() {
       )}
 
       <Card className="p-6">
-        <h2 className="font-display text-lg mb-4">Transaction history</h2>
+        <h2 className="font-display text-lg mb-4">Гүйлгээний түүх</h2>
         {txns.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No transactions yet.</p>
+          <p className="text-sm text-muted-foreground">Гүйлгээ байхгүй.</p>
         ) : (
           <div className="space-y-2">
             {txns.map((t) => (

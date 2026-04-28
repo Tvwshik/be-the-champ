@@ -24,27 +24,27 @@ export default function ProfilePage() {
     setBusy(true);
     const { error } = await supabase.from("profiles").update({ full_name: fullName, phone }).eq("id", user.id);
     setBusy(false);
-    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Profile saved" });
+    if (error) toast({ title: "Хадгалах амжилтгүй", description: error.message, variant: "destructive" });
+    else toast({ title: "Профайл хадгалагдлаа" });
   }
 
   return (
     <div>
-      <h1 className="font-display text-3xl mb-6">Profile</h1>
+      <h1 className="font-display text-3xl mb-6">Профайл</h1>
       <Card className="p-6 max-w-xl space-y-4">
         <div className="space-y-2">
-          <Label>Email</Label>
+          <Label>И-мэйл</Label>
           <Input value={user?.email ?? ""} disabled />
         </div>
         <div className="space-y-2">
-          <Label>Full name</Label>
+          <Label>Бүтэн нэр</Label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} maxLength={100} />
         </div>
         <div className="space-y-2">
-          <Label>Phone</Label>
+          <Label>Утас</Label>
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
         </div>
-        <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save"}</Button>
+        <Button onClick={save} disabled={busy}>{busy ? "Хадгалж байна…" : "Хадгалах"}</Button>
       </Card>
     </div>
   );

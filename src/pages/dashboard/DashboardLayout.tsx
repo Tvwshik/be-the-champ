@@ -1,13 +1,13 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Calendar, Wallet, UtensilsCrossed, User as UserIcon } from "lucide-react";
 
 const items = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Overview", end: true },
-  { to: "/dashboard/book", icon: Calendar, label: "Book a Seat" },
-  { to: "/dashboard/order", icon: UtensilsCrossed, label: "Order Food" },
-  { to: "/dashboard/wallet", icon: Wallet, label: "Wallet" },
-  { to: "/dashboard/profile", icon: UserIcon, label: "Profile" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Тойм", end: true },
+  { to: "/dashboard/book", icon: Calendar, label: "Суудал захиалах" },
+  { to: "/dashboard/order", icon: UtensilsCrossed, label: "Хоол захиалах" },
+  { to: "/dashboard/wallet", icon: Wallet, label: "Хэтэвч" },
+  { to: "/dashboard/profile", icon: UserIcon, label: "Профайл" },
 ];
 
 export default function DashboardLayout() {
