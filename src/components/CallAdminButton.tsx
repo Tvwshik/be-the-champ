@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const ADMIN_PHONE = "+976 9999-9999";
+const ADMIN_PHONE = "+976 7299-9777";
 
 export function CallAdminButton() {
   const [open, setOpen] = useState(false);

@@ -33,7 +33,7 @@ export default function Contact() {
           <Card className="p-5 bg-card/60 border-border/60">
             <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-primary mt-1" />
               <div><p className="font-semibold">Утас</p>
-                <p className="text-sm text-muted-foreground">Утасны дугаараа админаас нэмнэ үү</p>
+                <a href="tel:+9767299977" className="text-sm text-primary hover:underline">+976 7299-9777</a>
               </div>
             </div>
           </Card>
