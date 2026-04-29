@@ -19,7 +19,7 @@ export default function Home() {
           <div className="max-w-3xl animate-fade-in-up">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/40 bg-primary/10 text-xs font-semibold text-primary mb-6">
               <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-              Одоо нээлттэй · 10:00 – 02:00
+              24/7 нээлттэй
             </span>
             <h1 className="font-display text-5xl md:text-7xl font-black leading-[1.05] mb-6">
               <span className="text-gradient-neon">АВАРГА</span> шиг тогло
@@ -136,8 +136,8 @@ export default function Home() {
                 <a className="text-sm text-primary hover:underline" href="https://maps.app.goo.gl/jATtFThX7Re7dqKx7?g_st=ac" target="_blank" rel="noreferrer">Google Maps дээр нээх →</a>
               </div></div>
               <div className="flex items-start gap-3"><Clock className="h-5 w-5 text-primary mt-0.5" /><div>
-                <p className="font-semibold">Өдөр бүр нээлттэй</p>
-                <p className="text-sm text-muted-foreground">10:00 – 02:00</p>
+                <p className="font-semibold">24/7 нээлттэй</p>
+                <p className="text-sm text-muted-foreground">Өдөр бүр · 24 цаг</p>
               </div></div>
             </div>
           </div>
