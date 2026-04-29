@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
       .from("bookings").insert({
         user_id: user.id,
         station_id,
+        seat_id: seat_id ?? null,
         start_time: start.toISOString(),
         end_time: end.toISOString(),
         total_cost: cost,
