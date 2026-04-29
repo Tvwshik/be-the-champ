@@ -62,6 +62,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Mission + Notices */}
+      <section className="container py-16 md:py-24 border-t border-border/40">
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="p-6 md:p-8 bg-gradient-to-br from-primary/10 via-card to-card border-primary/30">
+            <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
+              <Sprout className="h-6 w-6 text-primary" />
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl mb-3">
+              Тоглож, <span className="text-gradient-neon">мод тарь</span>
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Манайх зөвхөн тоглоомын төв биш, нийгмийн хариуцлагыг хэрэгжүүлэгч хамт олон.
+            </p>
+            <p className="mt-3 font-semibold">
+              Таны цэнэглэлтийн <span className="text-secondary">100₮ бүр</span> мод тарих үйлсэд зориулагдана.
+            </p>
+          </Card>
+
+          <Card className="p-6 md:p-8 bg-gradient-to-br from-destructive/10 via-card to-card border-destructive/30">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+              <h2 className="font-display text-2xl md:text-3xl text-destructive">АНХААР!!!</h2>
+            </div>
+            <ul className="space-y-2 text-sm md:text-base text-muted-foreground">
+              <li>• Насанд хүрээгүй хүнд <strong className="text-foreground">18 цагаас хойш</strong> үйлчлэхгүй.</li>
+              <li>• Гадны гутлаа тайлж эсвэл улавч өмсөн үйлчлүүлнэ үү!</li>
+              <li>• Тэжээвэр амьтантай үйлчлүүлэх болон орох <strong className="text-foreground">хориотой</strong>.</li>
+              <li>• Чанга дуу чимээ болон тэсэрч дэлбэрэх зүйл авч орж ирэх <strong className="text-foreground">хориотой</strong>.</li>
+              <li>• Хулгайд эд зүйлээ алдахаас болгоомжлоорой.</li>
+              <li>• <strong className="text-foreground">24/7 Хяналтын камер</strong> ажиллаж байгаа тул биеэ зөв авч явна уу!</li>
+            </ul>
+          </Card>
+        </div>
+      </section>
+
       {/* Stations preview */}
       <section className="container py-16 md:py-24 border-t border-border/40">
         <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
