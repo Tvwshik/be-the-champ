@@ -13,7 +13,8 @@ import { Trash2, Calendar } from "lucide-react";
 type Station = { id: string; name: string; type: string; hourly_rate: number; capacity: number; description: string | null };
 
 const TYPE_LABEL: Record<string, string> = {
-  pc_standard: "Энгийн PC", pc_vip: "VIP PC", console: "Консол", room: "Тусдаа өрөө",
+  pc_standard: "HALL", pc_vip: "VIP", pc_vvip: "VVIP", pc_stage: "STAGE", pc_scorpion: "SCORPION",
+  console: "Консол", room: "Тусдаа өрөө",
 };
 
 const STATUS_LABEL: Record<string, string> = {
