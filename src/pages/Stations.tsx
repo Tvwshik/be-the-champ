@@ -26,7 +26,7 @@ type Station = {
 };
 
 const TYPE_INFO: Record<StationType, { label: string; icon: any; color: string; tagline: string }> = {
-  pc_standard: { label: "HALL", icon: Monitor, color: "text-primary", tagline: "Үндсэн талбай · 7800X3D · RTX 5060 · 360Hz" },
+  pc_standard: { label: "Заал", icon: Monitor, color: "text-primary", tagline: "Үндсэн талбай · 7800X3D · RTX 5060 · 360Hz" },
   pc_vip: { label: "VIP", icon: Crown, color: "text-secondary", tagline: "7800X3D · RTX 5060Ti · 500Hz · Night Pass боломжтой" },
   pc_vvip: { label: "VVIP", icon: Sparkles, color: "text-accent", tagline: "9800X3D · RTX 5070 · 500Hz · Night Pass боломжтой" },
   pc_stage: { label: "STAGE", icon: Trophy, color: "text-warning", tagline: "9800X3D · RTX 5070Ti · 500Hz · тэмцээний зэрэглэл" },
@@ -82,7 +82,7 @@ export default function Stations() {
           Үнэ ба <span className="text-gradient-neon">багц</span>
         </h1>
         <p className="text-muted-foreground">
-          HALL-аас SCORPION хүртэл — өөрийн түвшинд тохирох суудлаа сонго.
+          Заалаас SCORPION хүртэл — өөрийн түвшинд тохирох суудлаа сонго.
           Бүх PC-д Alienware дэлгэц, шинэ үеийн төхөөрөмж.
         </p>
       </div>

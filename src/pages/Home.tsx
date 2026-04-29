@@ -73,7 +73,7 @@ export default function Home() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {[
-            { name: "HALL", rate: "4,000₮/ц", desc: "7800X3D · RTX 5060 · 360Hz" },
+            { name: "Заал", rate: "4,000₮/ц", desc: "7800X3D · RTX 5060 · 360Hz" },
             { name: "VIP", rate: "6,000₮/ц", desc: "7800X3D · RTX 5060Ti · 500Hz" },
             { name: "VVIP", rate: "8,000₮/ц", desc: "9800X3D · RTX 5070 · 500Hz" },
             { name: "STAGE", rate: "10,000₮/ц", desc: "9800X3D · RTX 5070Ti · 500Hz" },

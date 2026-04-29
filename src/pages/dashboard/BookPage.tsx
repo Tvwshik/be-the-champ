@@ -14,7 +14,7 @@ type Station = { id: string; name: string; type: string; hourly_rate: number; ca
 type Seat = { id: string; station_id: string; label: string; position: number; is_active: boolean };
 
 const TYPE_LABEL: Record<string, string> = {
-  pc_standard: "HALL", pc_vip: "VIP", pc_vvip: "VVIP", pc_stage: "STAGE", pc_scorpion: "SCORPION",
+  pc_standard: "Заал", pc_vip: "VIP", pc_vvip: "VVIP", pc_stage: "STAGE", pc_scorpion: "SCORPION",
   console: "Консол", room: "Тусдаа өрөө",
 };
 
@@ -166,7 +166,7 @@ export default function BookPage() {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Бүх төрөл</SelectItem>
-                <SelectItem value="pc_standard">HALL</SelectItem>
+                <SelectItem value="pc_standard">Заал</SelectItem>
                 <SelectItem value="pc_vip">VIP</SelectItem>
                 <SelectItem value="pc_vvip">VVIP</SelectItem>
                 <SelectItem value="pc_stage">STAGE</SelectItem>

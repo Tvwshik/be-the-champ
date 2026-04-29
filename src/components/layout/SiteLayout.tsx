@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { CallAdminButton } from "@/components/CallAdminButton";
 
 export default function SiteLayout() {
   return (
@@ -10,6 +11,7 @@ export default function SiteLayout() {
         <Outlet />
       </main>
       <Footer />
+      <CallAdminButton />
     </div>
   );
 }
