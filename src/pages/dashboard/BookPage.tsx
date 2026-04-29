@@ -129,9 +129,11 @@ export default function BookPage() {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Бүх төрөл</SelectItem>
-                <SelectItem value="pc_standard">Энгийн PC</SelectItem>
-                <SelectItem value="pc_vip">VIP PC</SelectItem>
-                <SelectItem value="console">Консол</SelectItem>
+                <SelectItem value="pc_standard">HALL</SelectItem>
+                <SelectItem value="pc_vip">VIP</SelectItem>
+                <SelectItem value="pc_vvip">VVIP</SelectItem>
+                <SelectItem value="pc_stage">STAGE</SelectItem>
+                <SelectItem value="pc_scorpion">SCORPION</SelectItem>
                 <SelectItem value="room">Тусдаа өрөө</SelectItem>
               </SelectContent>
             </Select>
