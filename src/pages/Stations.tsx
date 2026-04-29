@@ -82,7 +82,7 @@ export default function Stations() {
           Үнэ ба <span className="text-gradient-neon">багц</span>
         </h1>
         <p className="text-muted-foreground">
-          HALL-аас SCORPION хүртэл — өөрийн түвшинд тохирох суудлаа сонго.
+          Заалаас SCORPION хүртэл — өөрийн түвшинд тохирох суудлаа сонго.
           Бүх PC-д Alienware дэлгэц, шинэ үеийн төхөөрөмж.
         </p>
       </div>
