@@ -301,7 +301,7 @@ export default function BookPage() {
             {bookings.map((b) => (
               <div key={b.id} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
                 <div>
-                  <p className="font-semibold">{b.stations?.name} <Badge variant="outline" className="ml-2">{STATUS_LABEL[b.status] ?? b.status}</Badge></p>
+                  <p className="font-semibold">{b.stations?.name}{b.station_seats?.label ? ` · ${b.station_seats.label}` : ""} <Badge variant="outline" className="ml-2">{STATUS_LABEL[b.status] ?? b.status}</Badge></p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {Number(b.total_cost).toLocaleString("mn-MN")}₮
                   </p>
