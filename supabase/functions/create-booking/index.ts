@@ -5,6 +5,7 @@ import { z } from "https://esm.sh/zod@3.23.8";
 
 const BodySchema = z.object({
   station_id: z.string().uuid(),
+  seat_id: z.string().uuid().optional().nullable(),
   start_time: z.string().datetime(),
   end_time: z.string().datetime(),
 });
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const parsed = BodySchema.safeParse(body);
     if (!parsed.success) return json({ error: parsed.error.flatten() }, 400);
-    const { station_id, start_time, end_time } = parsed.data;
+    const { station_id, seat_id, start_time, end_time } = parsed.data;
 
     const start = new Date(start_time);
     const end = new Date(end_time);
@@ -47,16 +48,37 @@ Deno.serve(async (req) => {
     const cost = Number((Number(station.hourly_rate) * hours).toFixed(2));
     const capacity = Number(station.capacity ?? 1);
 
-    // Overlap check — respect capacity (e.g. VIP rooms have 5 PCs)
-    const { data: overlap, count } = await supabase
-      .from("bookings")
-      .select("id", { count: "exact" })
-      .eq("station_id", station_id)
-      .in("status", ["confirmed", "checked_in"])
-      .lt("start_time", end.toISOString())
-      .gt("end_time", start.toISOString());
-    const taken = count ?? overlap?.length ?? 0;
-    if (taken >= capacity) return json({ error: "Энэ цагт суудал дүүрсэн байна" }, 409);
+    // If a specific seat was chosen, validate it belongs to this station and is free
+    if (seat_id) {
+      const { data: seat } = await supabase
+        .from("station_seats")
+        .select("id, station_id, is_active")
+        .eq("id", seat_id).maybeSingle();
+      if (!seat || seat.station_id !== station_id || !seat.is_active) {
+        return json({ error: "Сонгосон суудал олдсонгүй" }, 400);
+      }
+
+      const { data: seatOverlap } = await supabase
+        .from("bookings").select("id")
+        .eq("seat_id", seat_id)
+        .in("status", ["confirmed", "checked_in"])
+        .lt("start_time", end.toISOString())
+        .gt("end_time", start.toISOString())
+        .limit(1);
+      if (seatOverlap && seatOverlap.length) return json({ error: "Энэ суудал захиалагдсан байна" }, 409);
+    } else {
+      // No seat chosen — single-capacity station OR auto-pick mode.
+      // Count overlapping bookings for the station and reject if at/over capacity.
+      const { count } = await supabase
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("station_id", station_id)
+        .in("status", ["confirmed", "checked_in"])
+        .lt("start_time", end.toISOString())
+        .gt("end_time", start.toISOString());
+      const taken = count ?? 0;
+      if (taken >= capacity) return json({ error: "Энэ цагт суудал дүүрсэн байна" }, 409);
+    }
 
     // Wallet balance
     const { data: profile } = await supabase
@@ -73,6 +95,7 @@ Deno.serve(async (req) => {
       .from("bookings").insert({
         user_id: user.id,
         station_id,
+        seat_id: seat_id ?? null,
         start_time: start.toISOString(),
         end_time: end.toISOString(),
         total_cost: cost,

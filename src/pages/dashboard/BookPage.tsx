@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, Calendar } from "lucide-react";
+import { Trash2, Calendar, Armchair } from "lucide-react";
 
 type Station = { id: string; name: string; type: string; hourly_rate: number; capacity: number; description: string | null };
+type Seat = { id: string; station_id: string; label: string; position: number; is_active: boolean };
 
 const TYPE_LABEL: Record<string, string> = {
   pc_standard: "HALL", pc_vip: "VIP", pc_vvip: "VVIP", pc_stage: "STAGE", pc_scorpion: "SCORPION",
@@ -37,36 +38,54 @@ export default function BookPage() {
   const preset = params.get("station");
 
   const [stations, setStations] = useState<Station[]>([]);
+  const [seats, setSeats] = useState<Seat[]>([]);
   const [filterType, setFilterType] = useState<string>("all");
   const [stationId, setStationId] = useState<string>(preset ?? "");
+  const [seatId, setSeatId] = useState<string>("");
   const [start, setStart] = useState<string>(nowPlus(15));
   const [hours, setHours] = useState<number>(2);
   const [busy, setBusy] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
   const [taken, setTaken] = useState<Record<string, number>>({});
+  const [takenSeats, setTakenSeats] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    supabase.from("stations").select("*").eq("is_active", true).order("name")
-      .then(({ data }) => setStations((data ?? []) as Station[]));
+    Promise.all([
+      supabase.from("stations").select("*").eq("is_active", true).order("name"),
+      supabase.from("station_seats").select("*").eq("is_active", true).order("position"),
+    ]).then(([st, sts]) => {
+      setStations((st.data ?? []) as Station[]);
+      setSeats((sts.data ?? []) as Seat[]);
+    });
     refreshMyBookings();
   }, []);
 
   const station = stations.find((s) => s.id === stationId);
   const cost = station ? Number((Number(station.hourly_rate) * hours).toFixed(2)) : 0;
   const filtered = stations.filter((s) => filterType === "all" || s.type === filterType);
+  const stationSeats = seats.filter((s) => s.station_id === stationId);
+  const needsSeatPick = !!station && station.capacity > 1 && stationSeats.length > 0;
 
   const startISO = useMemo(() => new Date(start).toISOString(), [start]);
   const endISO = useMemo(() => new Date(new Date(start).getTime() + hours * 3600_000).toISOString(), [start, hours]);
 
+  // Reset seat selection whenever the station or time window changes
+  useEffect(() => { setSeatId(""); }, [stationId, startISO, endISO]);
+
   useEffect(() => {
     if (!stations.length) return;
-    supabase.from("bookings").select("station_id")
+    supabase.from("bookings").select("station_id, seat_id")
       .in("status", ["confirmed", "checked_in"])
       .lt("start_time", endISO).gt("end_time", startISO)
       .then(({ data }) => {
         const counts: Record<string, number> = {};
-        (data ?? []).forEach((r: any) => { counts[r.station_id] = (counts[r.station_id] ?? 0) + 1; });
+        const seatSet = new Set<string>();
+        (data ?? []).forEach((r: any) => {
+          counts[r.station_id] = (counts[r.station_id] ?? 0) + 1;
+          if (r.seat_id) seatSet.add(r.seat_id);
+        });
         setTaken(counts);
+        setTakenSeats(seatSet);
       });
   }, [stations, startISO, endISO]);
 
@@ -84,9 +103,13 @@ export default function BookPage() {
 
   async function book() {
     if (!stationId) { toast({ title: "Суудал сонгоно уу", variant: "destructive" }); return; }
+    if (needsSeatPick && !seatId) {
+      toast({ title: "Тоглох PC-гээ сонгоно уу", variant: "destructive" });
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("create-booking", {
-      body: { station_id: stationId, start_time: startISO, end_time: endISO },
+      body: { station_id: stationId, seat_id: seatId || null, start_time: startISO, end_time: endISO },
     });
     setBusy(false);
     if (error || (data as any)?.error) {
@@ -176,12 +199,56 @@ export default function BookPage() {
           </div>
         </div>
 
+        {/* Seat picker for multi-PC stations (VIP / VVIP / STAGE / ROOM) */}
+        {needsSeatPick && (
+          <div className="mt-6 pt-6 border-t border-border/40">
+            <Label className="mb-3 flex items-center gap-2">
+              <Armchair className="h-4 w-4 text-primary" />
+              {station?.name}-ийн PC сонгох
+            </Label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
+              {stationSeats.map((seat) => {
+                const isTaken = takenSeats.has(seat.id);
+                const selected = seatId === seat.id;
+                return (
+                  <button
+                    key={seat.id}
+                    type="button"
+                    disabled={isTaken}
+                    onClick={() => setSeatId(seat.id)}
+                    className={`p-3 rounded-lg border text-center transition-all ${
+                      selected
+                        ? "border-primary bg-primary/15 glow-cyan"
+                        : isTaken
+                        ? "border-border/40 opacity-40 cursor-not-allowed bg-muted/20"
+                        : "border-border hover:border-primary/50 hover:bg-primary/5"
+                    }`}
+                  >
+                    <Armchair className={`h-5 w-5 mx-auto mb-1 ${
+                      selected ? "text-primary" : isTaken ? "text-muted-foreground" : "text-foreground"
+                    }`} />
+                    <span className="text-xs font-semibold block">{seat.label}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {isTaken ? "Захиалагдсан" : "Сул"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/40">
           <div>
             <p className="text-sm text-muted-foreground">Нийт</p>
             <p className="font-display text-2xl text-secondary">{Number(cost).toLocaleString("mn-MN")}₮</p>
+            {seatId && station && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {station.name} · {stationSeats.find((x) => x.id === seatId)?.label}
+              </p>
+            )}
           </div>
-          <Button disabled={busy || !stationId} onClick={book} size="lg"
+          <Button disabled={busy || !stationId || (needsSeatPick && !seatId)} onClick={book} size="lg"
             className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
             {busy ? "Захиалж байна…" : "Захиалга баталгаажуулах"}
           </Button>
