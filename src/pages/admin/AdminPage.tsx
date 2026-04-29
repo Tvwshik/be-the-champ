@@ -272,27 +272,69 @@ function MenuAdmin() {
 
 function StationsAdmin() {
   const [stations, setStations] = useState<any[]>([]);
-  const load = () => supabase.from("stations").select("*").order("name").then(({ data }) => setStations(data ?? []));
+  const [seatsByStation, setSeatsByStation] = useState<Record<string, any[]>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const load = async () => {
+    const { data: st } = await supabase.from("stations").select("*").order("name");
+    setStations(st ?? []);
+    const { data: seats } = await supabase.from("station_seats").select("*").order("position");
+    const grouped: Record<string, any[]> = {};
+    (seats ?? []).forEach((s: any) => {
+      (grouped[s.station_id] ||= []).push(s);
+    });
+    setSeatsByStation(grouped);
+  };
   useEffect(() => { load(); }, []);
-  const toggle = async (id: string, active: boolean) => {
+
+  const toggleStation = async (id: string, active: boolean) => {
     await supabase.from("stations").update({ is_active: !active }).eq("id", id); load();
   };
+  const toggleSeat = async (id: string, active: boolean) => {
+    await supabase.from("station_seats").update({ is_active: !active }).eq("id", id); load();
+  };
+
   return (
     <Card className="p-5 mt-4">
-      <p className="text-sm text-muted-foreground mb-3">Суудлууд бэлэн оруулагдсан — энд боломжийг асаах/унтраах боломжтой.</p>
+      <p className="text-sm text-muted-foreground mb-3">Суудлуудыг асаах/унтраах. Дэлгэрэнгүйг дарж тус бүр суудлыг идэвхжүүлэх боломжтой.</p>
       <div className="space-y-1">
-        {stations.map((s) => (
-          <div key={s.id} className="flex items-center justify-between p-2 border-b border-border/40 last:border-0">
-            <div>
-              <p className="font-semibold">{s.name}</p>
-              <p className="text-xs text-muted-foreground">{s.type} · {Number(s.hourly_rate).toLocaleString("mn-MN")}₮/ц · суудал {s.capacity}</p>
+        {stations.map((s) => {
+          const seats = seatsByStation[s.id] ?? [];
+          const isOpen = !!expanded[s.id];
+          return (
+            <div key={s.id} className="border-b border-border/40 last:border-0">
+              <div className="flex items-center justify-between p-2">
+                <button
+                  className="text-left flex-1"
+                  onClick={() => setExpanded((e) => ({ ...e, [s.id]: !e[s.id] }))}
+                >
+                  <p className="font-semibold">{s.name} {seats.length > 0 && <span className="text-xs text-muted-foreground">({isOpen ? "▾" : "▸"} {seats.filter((x) => x.is_active).length}/{seats.length})</span>}</p>
+                  <p className="text-xs text-muted-foreground">{s.type} · {Number(s.hourly_rate).toLocaleString("mn-MN")}₮/ц · суудал {s.capacity}</p>
+                </button>
+                <div className="flex items-center gap-2">
+                  <Badge variant={s.is_active ? "default" : "outline"}>{s.is_active ? "идэвхтэй" : "идэвхгүй"}</Badge>
+                  <Button size="sm" variant="outline" onClick={() => toggleStation(s.id, s.is_active)}>{s.is_active ? "Идэвхгүй" : "Идэвхжүүлэх"}</Button>
+                </div>
+              </div>
+              {isOpen && (
+                <div className="pl-4 pb-3 pr-2 space-y-1">
+                  {seats.length === 0 && <p className="text-xs text-muted-foreground">Энэ ширээнд тусдаа суудал бүртгэгдээгүй.</p>}
+                  {seats.map((seat) => (
+                    <div key={seat.id} className="flex items-center justify-between p-2 rounded bg-muted/30">
+                      <span className="text-sm">Суудал {seat.label}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={seat.is_active ? "default" : "outline"}>{seat.is_active ? "идэвхтэй" : "идэвхгүй"}</Badge>
+                        <Button size="sm" variant="outline" onClick={() => toggleSeat(seat.id, seat.is_active)}>
+                          {seat.is_active ? "Идэвхгүй" : "Идэвхжүүлэх"}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={s.is_active ? "default" : "outline"}>{s.is_active ? "идэвхтэй" : "идэвхгүй"}</Badge>
-              <Button size="sm" variant="outline" onClick={() => toggle(s.id, s.is_active)}>{s.is_active ? "Идэвхгүй болгох" : "Идэвхжүүлэх"}</Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );
