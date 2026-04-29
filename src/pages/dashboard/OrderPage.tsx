@@ -82,7 +82,7 @@ export default function OrderPage() {
       toast({ title: "Захиалга амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Захиалга хүлээж авлаа!", description: `$${(data as any).total.toFixed(2)} төлөгдлөө.` });
+    toast({ title: "Захиалга хүлээж авлаа!", description: `${(data as any).total.toLocaleString("mn-MN")}₮ төлөгдлөө.` });
     setCart({}); setNotes("");
     refreshOrders();
   }
@@ -108,7 +108,7 @@ export default function OrderPage() {
                         <div className="flex-1">
                           <p className="font-semibold">{it.name}</p>
                           {it.description && <p className="text-xs text-muted-foreground mt-0.5">{it.description}</p>}
-                          <p className="text-sm text-secondary font-bold mt-1">${Number(it.price).toFixed(2)}</p>
+                          <p className="text-sm text-secondary font-bold mt-1">{Number(it.price).toLocaleString("mn-MN")}₮</p>
                         </div>
                         {qty === 0 ? (
                           <Button size="sm" variant="outline" onClick={() => setQty(it.id, 1)}>
@@ -144,7 +144,7 @@ export default function OrderPage() {
                     <div key={id} className="flex items-center justify-between text-sm">
                       <span>{qty}× {it.name}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">${(Number(it.price) * qty).toFixed(2)}</span>
+                        <span className="font-semibold">{(Number(it.price) * qty).toLocaleString("mn-MN")}₮</span>
                         <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setQty(id, 0)}><Trash2 className="h-3 w-3" /></Button>
                       </div>
                     </div>
@@ -174,7 +174,7 @@ export default function OrderPage() {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
               <span className="text-muted-foreground">Нийт</span>
-              <span className="font-display text-2xl text-secondary">${total.toFixed(2)}</span>
+              <span className="font-display text-2xl text-secondary">{Number(total).toLocaleString("mn-MN")}₮</span>
             </div>
             <Button onClick={placeOrder} disabled={busy || total === 0} className="w-full mt-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
               {busy ? "Илгээж байна…" : "Хэтэвчээс төлөх"}
@@ -191,7 +191,7 @@ export default function OrderPage() {
                       <span className="font-mono">#{o.id.slice(0, 6).toUpperCase()}</span>
                       <Badge variant={o.status === "delivered" ? "default" : "outline"} className="capitalize">{ORDER_STATUS_LABEL[o.status] ?? o.status}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">${Number(o.total).toFixed(2)} · {o.order_items?.length} зүйл</p>
+                    <p className="text-xs text-muted-foreground mt-1">{Number(o.total).toLocaleString("mn-MN")}₮ · {o.order_items?.length} зүйл</p>
                   </div>
                 ))}
               </div>

@@ -36,7 +36,7 @@ export default function DashboardHome() {
             <Wallet className="h-5 w-5 text-primary" />
             <span className="text-xs text-muted-foreground">Хэтэвч</span>
           </div>
-          <p className="font-display text-3xl">${balance.toFixed(2)}</p>
+          <p className="font-display text-3xl">{Number(balance).toLocaleString("mn-MN")}₮</p>
           <Button asChild variant="outline" size="sm" className="mt-3 w-full">
             <Link to="/dashboard/wallet">Цэнэглэх <ArrowRight className="h-3 w-3" /></Link>
           </Button>
@@ -76,7 +76,7 @@ export default function DashboardHome() {
                   {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
-              <span className="text-sm font-bold text-secondary">${Number(b.total_cost).toFixed(2)}</span>
+              <span className="text-sm font-bold text-secondary">{Number(b.total_cost).toLocaleString("mn-MN")}₮</span>
             </div>
           ))}
         </Card>
@@ -92,7 +92,7 @@ export default function DashboardHome() {
                   {o.status.replace("_", " ")} · {new Date(o.created_at).toLocaleString()}
                 </p>
               </div>
-              <span className="text-sm font-bold text-secondary">${Number(o.total).toFixed(2)}</span>
+              <span className="text-sm font-bold text-secondary">{Number(o.total).toLocaleString("mn-MN")}₮</span>
             </div>
           ))}
         </Card>

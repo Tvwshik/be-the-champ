@@ -71,12 +71,13 @@ export default function Home() {
           </div>
           <Button asChild variant="outline"><Link to="/stations">Бүгдийг үзэх <ArrowRight className="h-4 w-4" /></Link></Button>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {[
-            { name: "Энгийн PC", rate: "$3/цаг", desc: "Сайн гэйминг машин, мех гар" },
-            { name: "VIP PC", rate: "$6/цаг", desc: "RTX 4080, дээд зэрэглэлийн төхөөрөмж" },
-            { name: "Консол суудал", rate: "$5/цаг", desc: "Том дэлгэц дээр PS5 / Switch" },
-            { name: "Тусдаа өрөө", rate: "$20+/цаг", desc: "6–8 PC, дуу нэвтрүүлэхгүй" },
+            { name: "HALL", rate: "4,000₮/ц", desc: "7800X3D · RTX 5060 · 360Hz" },
+            { name: "VIP", rate: "6,000₮/ц", desc: "7800X3D · RTX 5060Ti · 500Hz" },
+            { name: "VVIP", rate: "8,000₮/ц", desc: "9800X3D · RTX 5070 · 500Hz" },
+            { name: "STAGE", rate: "10,000₮/ц", desc: "9800X3D · RTX 5070Ti · 500Hz" },
+            { name: "SCORPION", rate: "50,000₮/ц", desc: "Premium тусгай багц" },
           ].map((s) => (
             <Card key={s.name} className="p-5 bg-gradient-to-br from-card to-card/40 border-border/60 hover:border-primary/50 hover:glow-cyan transition-all">
               <Trophy className="h-5 w-5 text-primary mb-3" />

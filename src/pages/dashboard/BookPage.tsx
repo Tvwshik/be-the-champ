@@ -13,7 +13,8 @@ import { Trash2, Calendar } from "lucide-react";
 type Station = { id: string; name: string; type: string; hourly_rate: number; capacity: number; description: string | null };
 
 const TYPE_LABEL: Record<string, string> = {
-  pc_standard: "Энгийн PC", pc_vip: "VIP PC", console: "Консол", room: "Тусдаа өрөө",
+  pc_standard: "HALL", pc_vip: "VIP", pc_vvip: "VVIP", pc_stage: "STAGE", pc_scorpion: "SCORPION",
+  console: "Консол", room: "Тусдаа өрөө",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -90,7 +91,7 @@ export default function BookPage() {
       toast({ title: "Захиалга амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Захиалсан!", description: `$${(data as any).cost.toFixed(2)} төлөгдлөө. Үлдэгдэл: $${(data as any).balance.toFixed(2)}` });
+    toast({ title: "Захиалсан!", description: `${(data as any).cost.toLocaleString("mn-MN")}₮ төлөгдлөө. Үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` });
     refreshMyBookings();
   }
 
@@ -150,7 +151,7 @@ export default function BookPage() {
                   }`}>
                   <div className="flex items-start justify-between">
                     <span className="font-semibold">{s.name}</span>
-                    <span className="text-secondary font-bold text-sm">${s.hourly_rate}/ц</span>
+                    <span className="text-secondary font-bold text-sm">{Number(s.hourly_rate).toLocaleString("mn-MN")}₮/ц</span>
                   </div>
                   <span className="text-xs text-muted-foreground">{TYPE_LABEL[s.type]}</span>
                   {!isAv && <Badge variant="outline" className="mt-1 text-[10px]">Захиалагдсан</Badge>}
@@ -163,7 +164,7 @@ export default function BookPage() {
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/40">
           <div>
             <p className="text-sm text-muted-foreground">Нийт</p>
-            <p className="font-display text-2xl text-secondary">${cost.toFixed(2)}</p>
+            <p className="font-display text-2xl text-secondary">{Number(cost).toLocaleString("mn-MN")}₮</p>
           </div>
           <Button disabled={busy || !stationId} onClick={book} size="lg"
             className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
@@ -183,7 +184,7 @@ export default function BookPage() {
                 <div>
                   <p className="font-semibold">{b.stations?.name} <Badge variant="outline" className="ml-2">{STATUS_LABEL[b.status] ?? b.status}</Badge></p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${Number(b.total_cost).toFixed(2)}
+                    {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {Number(b.total_cost).toLocaleString("mn-MN")}₮
                   </p>
                 </div>
                 {b.status === "confirmed" && (

@@ -382,7 +382,14 @@ export type Database = {
         | "completed"
         | "cancelled"
       order_status: "received" | "preparing" | "delivered" | "cancelled"
-      station_type: "pc_standard" | "pc_vip" | "console" | "room"
+      station_type:
+        | "pc_standard"
+        | "pc_vip"
+        | "console"
+        | "room"
+        | "pc_vvip"
+        | "pc_stage"
+        | "pc_scorpion"
       topup_status: "pending" | "approved" | "rejected"
       txn_type:
         | "topup_cash"
@@ -527,7 +534,15 @@ export const Constants = {
         "cancelled",
       ],
       order_status: ["received", "preparing", "delivered", "cancelled"],
-      station_type: ["pc_standard", "pc_vip", "console", "room"],
+      station_type: [
+        "pc_standard",
+        "pc_vip",
+        "console",
+        "room",
+        "pc_vvip",
+        "pc_stage",
+        "pc_scorpion",
+      ],
       topup_status: ["pending", "approved", "rejected"],
       txn_type: [
         "topup_cash",
