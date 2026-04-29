@@ -20,6 +20,7 @@ export type Database = {
           end_time: string
           id: string
           notes: string | null
+          seat_id: string | null
           start_time: string
           station_id: string
           status: Database["public"]["Enums"]["booking_status"]
@@ -31,6 +32,7 @@ export type Database = {
           end_time: string
           id?: string
           notes?: string | null
+          seat_id?: string | null
           start_time: string
           station_id: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -42,6 +44,7 @@ export type Database = {
           end_time?: string
           id?: string
           notes?: string | null
+          seat_id?: string | null
           start_time?: string
           station_id?: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -49,6 +52,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "station_seats"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_station_id_fkey"
             columns: ["station_id"]
@@ -238,6 +248,41 @@ export type Database = {
           wallet_balance?: number
         }
         Relationships: []
+      }
+      station_seats: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          position: number
+          station_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          position?: number
+          station_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          position?: number
+          station_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_seats_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stations: {
         Row: {
