@@ -68,6 +68,45 @@ export type Database = {
           },
         ]
       }
+      imported_members: {
+        Row: {
+          claimed_at: string | null
+          claimed_by_user_id: string | null
+          created_at: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          source: string | null
+          updated_at: string
+          wallet_balance: number
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+          wallet_balance?: number
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+          wallet_balance?: number
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
