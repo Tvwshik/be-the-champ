@@ -54,7 +54,7 @@ export default function Menu() {
                     <h3 className="font-semibold">{it.name}</h3>
                     {it.description && <p className="text-sm text-muted-foreground mt-1">{it.description}</p>}
                   </div>
-                  <span className="font-display font-bold text-secondary whitespace-nowrap">${Number(it.price).toFixed(2)}</span>
+                  <span className="font-display font-bold text-secondary whitespace-nowrap">{Number(it.price).toLocaleString("mn-MN")}₮</span>
                 </Card>
               ))}
             </div>

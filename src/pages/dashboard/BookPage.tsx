@@ -41,7 +41,8 @@ export default function BookPage() {
   const [seats, setSeats] = useState<Seat[]>([]);
   const [filterType, setFilterType] = useState<string>("all");
   const [stationId, setStationId] = useState<string>(preset ?? "");
-  const [seatId, setSeatId] = useState<string>("");
+  const [seatIds, setSeatIds] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState<number>(1); // for single-cap stations
   const [start, setStart] = useState<string>(nowPlus(15));
   const [hours, setHours] = useState<number>(2);
   const [busy, setBusy] = useState(false);
@@ -61,16 +62,21 @@ export default function BookPage() {
   }, []);
 
   const station = stations.find((s) => s.id === stationId);
-  const cost = station ? Number((Number(station.hourly_rate) * hours).toFixed(2)) : 0;
   const filtered = stations.filter((s) => filterType === "all" || s.type === filterType);
   const stationSeats = seats.filter((s) => s.station_id === stationId);
   const needsSeatPick = !!station && station.capacity > 1 && stationSeats.length > 0;
 
+  const seatCount = needsSeatPick ? seatIds.length : Math.max(1, quantity);
+  const cost = station ? Number((Number(station.hourly_rate) * hours * seatCount).toFixed(2)) : 0;
+
   const startISO = useMemo(() => new Date(start).toISOString(), [start]);
   const endISO = useMemo(() => new Date(new Date(start).getTime() + hours * 3600_000).toISOString(), [start, hours]);
 
-  // Reset seat selection whenever the station or time window changes
-  useEffect(() => { setSeatId(""); }, [stationId, startISO, endISO]);
+  // Reset selections whenever the station or time window changes
+  useEffect(() => {
+    setSeatIds([]);
+    setQuantity(1);
+  }, [stationId, startISO, endISO]);
 
   useEffect(() => {
     if (!stations.length) return;
@@ -90,11 +96,16 @@ export default function BookPage() {
   }, [stations, startISO, endISO]);
 
   const freeCount = (s: Station) => Math.max(0, s.capacity - (taken[s.id] ?? 0));
+  const stationFree = station ? freeCount(station) : 0;
+
+  function toggleSeat(id: string) {
+    setSeatIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
 
   function refreshMyBookings() {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return;
-      supabase.from("bookings").select("*, stations(name, type)")
+      supabase.from("bookings").select("*, stations(name, type), station_seats:seat_id(label)")
         .eq("user_id", data.user.id).gte("end_time", new Date().toISOString())
         .order("start_time")
         .then(({ data }) => setBookings(data ?? []));
@@ -103,20 +114,23 @@ export default function BookPage() {
 
   async function book() {
     if (!stationId) { toast({ title: "Суудал сонгоно уу", variant: "destructive" }); return; }
-    if (needsSeatPick && !seatId) {
+    if (needsSeatPick && seatIds.length === 0) {
       toast({ title: "Тоглох PC-гээ сонгоно уу", variant: "destructive" });
       return;
     }
     setBusy(true);
-    const { data, error } = await supabase.functions.invoke("create-booking", {
-      body: { station_id: stationId, seat_id: seatId || null, start_time: startISO, end_time: endISO },
-    });
+    const body: any = { station_id: stationId, start_time: startISO, end_time: endISO };
+    if (needsSeatPick) body.seat_ids = seatIds;
+    else body.quantity = quantity;
+
+    const { data, error } = await supabase.functions.invoke("create-booking", { body });
     setBusy(false);
     if (error || (data as any)?.error) {
       toast({ title: "Захиалга амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Захиалсан!", description: `${(data as any).cost.toLocaleString("mn-MN")}₮ төлөгдлөө. Үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` });
+    const n = (data as any).count ?? 1;
+    toast({ title: "Захиалсан!", description: `${n} PC · ${(data as any).cost.toLocaleString("mn-MN")}₮ төлөгдлөө. Үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` });
     refreshMyBookings();
   }
 
@@ -199,23 +213,28 @@ export default function BookPage() {
           </div>
         </div>
 
-        {/* Seat picker for multi-PC stations (VIP / VVIP / STAGE / ROOM) */}
+        {/* Seat picker for multi-PC stations (HALL / VIP / VVIP / STAGE / ROOM) */}
         {needsSeatPick && (
           <div className="mt-6 pt-6 border-t border-border/40">
-            <Label className="mb-3 flex items-center gap-2">
-              <Armchair className="h-4 w-4 text-primary" />
-              {station?.name}-ийн PC сонгох
-            </Label>
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <Label className="flex items-center gap-2 mb-0">
+                <Armchair className="h-4 w-4 text-primary" />
+                {station?.name}-ийн PC сонгох (хэд хэдийг сонгож болно)
+              </Label>
+              <span className="text-xs text-muted-foreground">
+                {seatIds.length} / {stationSeats.length} сонгосон
+              </span>
+            </div>
             <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
               {stationSeats.map((seat) => {
                 const isTaken = takenSeats.has(seat.id);
-                const selected = seatId === seat.id;
+                const selected = seatIds.includes(seat.id);
                 return (
                   <button
                     key={seat.id}
                     type="button"
                     disabled={isTaken}
-                    onClick={() => setSeatId(seat.id)}
+                    onClick={() => toggleSeat(seat.id)}
                     className={`p-3 rounded-lg border text-center transition-all ${
                       selected
                         ? "border-primary bg-primary/15 glow-cyan"
@@ -229,7 +248,7 @@ export default function BookPage() {
                     }`} />
                     <span className="text-xs font-semibold block">{seat.label}</span>
                     <span className="text-[10px] text-muted-foreground">
-                      {isTaken ? "Захиалагдсан" : "Сул"}
+                      {isTaken ? "Захиалагдсан" : selected ? "Сонгосон" : "Сул"}
                     </span>
                   </button>
                 );
@@ -238,17 +257,35 @@ export default function BookPage() {
           </div>
         )}
 
+        {/* Quantity stepper for stations without per-seat picking (e.g. SCORPION suite, capacity > 1 but no seats) */}
+        {!!station && !needsSeatPick && station.capacity > 1 && (
+          <div className="mt-6 pt-6 border-t border-border/40">
+            <Label className="mb-3 block">PC-ийн тоо</Label>
+            <div className="flex items-center gap-3">
+              <Button type="button" variant="outline" size="icon"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1}>−</Button>
+              <span className="font-display text-2xl w-12 text-center">{quantity}</span>
+              <Button type="button" variant="outline" size="icon"
+                onClick={() => setQuantity((q) => Math.min(stationFree, q + 1))}
+                disabled={quantity >= stationFree}>+</Button>
+              <span className="text-xs text-muted-foreground ml-2">{stationFree} сул</span>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/40">
           <div>
-            <p className="text-sm text-muted-foreground">Нийт</p>
+            <p className="text-sm text-muted-foreground">
+              Нийт {seatCount > 1 && <span>· {seatCount} PC × {hours}ц</span>}
+            </p>
             <p className="font-display text-2xl text-secondary">{Number(cost).toLocaleString("mn-MN")}₮</p>
-            {seatId && station && (
+            {needsSeatPick && seatIds.length > 0 && station && (
               <p className="text-xs text-muted-foreground mt-1">
-                {station.name} · {stationSeats.find((x) => x.id === seatId)?.label}
+                {station.name} · {seatIds.map((id) => stationSeats.find((x) => x.id === id)?.label).filter(Boolean).join(", ")}
               </p>
             )}
           </div>
-          <Button disabled={busy || !stationId || (needsSeatPick && !seatId)} onClick={book} size="lg"
+          <Button disabled={busy || !stationId || (needsSeatPick && seatIds.length === 0)} onClick={book} size="lg"
             className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
             {busy ? "Захиалж байна…" : "Захиалга баталгаажуулах"}
           </Button>
@@ -264,7 +301,7 @@ export default function BookPage() {
             {bookings.map((b) => (
               <div key={b.id} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
                 <div>
-                  <p className="font-semibold">{b.stations?.name} <Badge variant="outline" className="ml-2">{STATUS_LABEL[b.status] ?? b.status}</Badge></p>
+                  <p className="font-semibold">{b.stations?.name}{b.station_seats?.label ? ` · ${b.station_seats.label}` : ""} <Badge variant="outline" className="ml-2">{STATUS_LABEL[b.status] ?? b.status}</Badge></p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {Number(b.total_cost).toLocaleString("mn-MN")}₮
                   </p>

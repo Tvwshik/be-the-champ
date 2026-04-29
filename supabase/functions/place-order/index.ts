@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     if (!profile) return json({ error: "Profile not found" }, 404);
     if (profile.is_suspended) return json({ error: "Account suspended" }, 403);
     const balance = Number(profile.wallet_balance);
-    if (balance < total) return json({ error: `Insufficient balance. Need $${total.toFixed(2)}, have $${balance.toFixed(2)}` }, 402);
+    if (balance < total) return json({ error: `Үлдэгдэл хүрэлцэхгүй. Шаардлагатай: ${total.toLocaleString("mn-MN")}₮, үлдэгдэл: ${balance.toLocaleString("mn-MN")}₮` }, 402);
 
     const newBalance = Number((balance - total).toFixed(2));
 
