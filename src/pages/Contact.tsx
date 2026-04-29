@@ -8,7 +8,7 @@ export default function Contact() {
         <h1 className="font-display text-4xl md:text-5xl mb-3">
           Биднийг <span className="text-gradient-neon">олох</span>
         </h1>
-        <p className="text-muted-foreground">Хэзээ ч ороорой — өдөрт 16 цаг нээлттэй.</p>
+        <p className="text-muted-foreground">Хэзээ ч ороорой — 24/7 нээлттэй.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -25,8 +25,8 @@ export default function Contact() {
           </Card>
           <Card className="p-5 bg-card/60 border-border/60">
             <div className="flex items-start gap-3"><Clock className="h-5 w-5 text-primary mt-1" />
-              <div><p className="font-semibold">Өдөр бүр нээлттэй</p>
-                <p className="text-sm text-muted-foreground">10:00 – 02:00</p>
+              <div><p className="font-semibold">24/7 нээлттэй</p>
+                <p className="text-sm text-muted-foreground">Өдөр бүр · 24 цаг</p>
               </div>
             </div>
           </Card>

@@ -32,7 +32,7 @@ export function Footer() {
         </div>
         <div>
           <h4 className="font-display text-sm mb-3">Цагийн хуваарь</h4>
-          <p className="text-sm text-muted-foreground">Даваа–Ням · 10:00 – 02:00</p>
+          <p className="text-sm text-muted-foreground">24/7 нээлттэй</p>
           <p className="text-sm text-muted-foreground mt-1">Бүх баярын өдөр нээлттэй</p>
         </div>
       </div>
