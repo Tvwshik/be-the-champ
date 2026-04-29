@@ -199,12 +199,56 @@ export default function BookPage() {
           </div>
         </div>
 
+        {/* Seat picker for multi-PC stations (VIP / VVIP / STAGE / ROOM) */}
+        {needsSeatPick && (
+          <div className="mt-6 pt-6 border-t border-border/40">
+            <Label className="mb-3 flex items-center gap-2">
+              <Armchair className="h-4 w-4 text-primary" />
+              {station?.name}-ийн PC сонгох
+            </Label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
+              {stationSeats.map((seat) => {
+                const isTaken = takenSeats.has(seat.id);
+                const selected = seatId === seat.id;
+                return (
+                  <button
+                    key={seat.id}
+                    type="button"
+                    disabled={isTaken}
+                    onClick={() => setSeatId(seat.id)}
+                    className={`p-3 rounded-lg border text-center transition-all ${
+                      selected
+                        ? "border-primary bg-primary/15 glow-cyan"
+                        : isTaken
+                        ? "border-border/40 opacity-40 cursor-not-allowed bg-muted/20"
+                        : "border-border hover:border-primary/50 hover:bg-primary/5"
+                    }`}
+                  >
+                    <Armchair className={`h-5 w-5 mx-auto mb-1 ${
+                      selected ? "text-primary" : isTaken ? "text-muted-foreground" : "text-foreground"
+                    }`} />
+                    <span className="text-xs font-semibold block">{seat.label}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {isTaken ? "Захиалагдсан" : "Сул"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/40">
           <div>
             <p className="text-sm text-muted-foreground">Нийт</p>
             <p className="font-display text-2xl text-secondary">{Number(cost).toLocaleString("mn-MN")}₮</p>
+            {seatId && station && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {station.name} · {stationSeats.find((x) => x.id === seatId)?.label}
+              </p>
+            )}
           </div>
-          <Button disabled={busy || !stationId} onClick={book} size="lg"
+          <Button disabled={busy || !stationId || (needsSeatPick && !seatId)} onClick={book} size="lg"
             className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
             {busy ? "Захиалж байна…" : "Захиалга баталгаажуулах"}
           </Button>
