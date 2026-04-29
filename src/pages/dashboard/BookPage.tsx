@@ -166,7 +166,7 @@ export default function BookPage() {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Бүх төрөл</SelectItem>
-                <SelectItem value="pc_standard">HALL</SelectItem>
+                <SelectItem value="pc_standard">Заал</SelectItem>
                 <SelectItem value="pc_vip">VIP</SelectItem>
                 <SelectItem value="pc_vvip">VVIP</SelectItem>
                 <SelectItem value="pc_stage">STAGE</SelectItem>
