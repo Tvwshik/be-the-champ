@@ -150,7 +150,7 @@ export default function BookPage() {
                   }`}>
                   <div className="flex items-start justify-between">
                     <span className="font-semibold">{s.name}</span>
-                    <span className="text-secondary font-bold text-sm">${s.hourly_rate}/ц</span>
+                    <span className="text-secondary font-bold text-sm">{Number(s.hourly_rate).toLocaleString("mn-MN")}₮/ц</span>
                   </div>
                   <span className="text-xs text-muted-foreground">{TYPE_LABEL[s.type]}</span>
                   {!isAv && <Badge variant="outline" className="mt-1 text-[10px]">Захиалагдсан</Badge>}
