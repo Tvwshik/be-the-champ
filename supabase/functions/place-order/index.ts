@@ -1,6 +1,11 @@
 // Edge function: place a food order, debit wallet
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.104.1/cors";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.104.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 import { z } from "https://esm.sh/zod@3.23.8";
 
 const BodySchema = z.object({
