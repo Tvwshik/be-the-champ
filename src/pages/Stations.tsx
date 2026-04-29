@@ -42,15 +42,38 @@ const fmtMnt = (n: number) => `${n.toLocaleString("mn-MN")}₮`;
 export default function Stations() {
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+  const [taken, setTaken] = useState<Record<string, number>>({});
+
+  async function loadAvailability() {
+    const now = new Date().toISOString();
+    const { data } = await supabase
+      .from("bookings")
+      .select("station_id")
+      .in("status", ["confirmed", "checked_in"])
+      .lte("start_time", now)
+      .gt("end_time", now);
+    const counts: Record<string, number> = {};
+    (data ?? []).forEach((r: any) => { counts[r.station_id] = (counts[r.station_id] ?? 0) + 1; });
+    setTaken(counts);
+  }
 
   useEffect(() => {
     supabase.from("stations").select("*").eq("is_active", true).order("name")
       .then(({ data }) => { setStations((data ?? []) as Station[]); setLoading(false); });
+    loadAvailability();
+    const id = setInterval(loadAvailability, 30_000);
+    return () => clearInterval(id);
   }, []);
+
+  const freeCount = (s: Station) => Math.max(0, s.capacity - (taken[s.id] ?? 0));
 
   const grouped = stations.reduce<Record<string, Station[]>>((acc, s) => {
     (acc[s.type] ||= []).push(s); return acc;
   }, {});
+
+  const tierFree = (items: Station[]) => items.reduce((n, s) => n + freeCount(s), 0);
+  const tierTotal = (items: Station[]) => items.reduce((n, s) => n + s.capacity, 0);
+
 
   return (
     <div className="container py-12 md:py-16">
