@@ -73,12 +73,25 @@ export default function OrderPage() {
 
   async function placeOrder() {
     if (Object.keys(cart).length === 0) { toast({ title: "Сагс хоосон байна", variant: "destructive" }); return; }
-    if (!stationId && !seatLabel.trim()) { toast({ title: "Суудлаа мэдэгдээрэй", description: "Суудал сонгох эсвэл суудлын дугаараа бичнэ үү.", variant: "destructive" }); return; }
+    const station = stations.find((s) => s.id === stationId);
+    const seat = seats.find((s) => s.id === seatId);
+    let label: string | null = null;
+    if (manualSeat.trim()) {
+      label = manualSeat.trim();
+    } else if (station && seat) {
+      label = `${station.name} · ${seat.label}`;
+    } else if (station && seatsForStation.length === 0) {
+      label = station.name;
+    }
+    if (!label) {
+      toast({ title: "Суудлаа сонгоно уу", description: "Хэсэг болон суудлаа сонгох эсвэл суудлын дугаараа бичнэ үү.", variant: "destructive" });
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("place-order", {
       body: {
-        station_id: stationId || null,
-        seat_label: stationId ? null : seatLabel.trim(),
+        station_id: manualSeat.trim() ? null : stationId || null,
+        seat_label: label,
         notes: notes || undefined,
         items: Object.entries(cart).map(([menu_item_id, quantity]) => ({ menu_item_id, quantity })),
       },
@@ -89,7 +102,7 @@ export default function OrderPage() {
       return;
     }
     toast({ title: "Захиалга хүлээж авлаа!", description: `${(data as any).total.toLocaleString("mn-MN")}₮ төлөгдлөө.` });
-    setCart({}); setNotes("");
+    setCart({}); setNotes(""); setSeatId(""); setManualSeat("");
     refreshOrders();
   }
 
