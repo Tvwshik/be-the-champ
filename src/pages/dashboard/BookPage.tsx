@@ -41,7 +41,8 @@ export default function BookPage() {
   const [seats, setSeats] = useState<Seat[]>([]);
   const [filterType, setFilterType] = useState<string>("all");
   const [stationId, setStationId] = useState<string>(preset ?? "");
-  const [seatId, setSeatId] = useState<string>("");
+  const [seatIds, setSeatIds] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState<number>(1); // for single-cap stations
   const [start, setStart] = useState<string>(nowPlus(15));
   const [hours, setHours] = useState<number>(2);
   const [busy, setBusy] = useState(false);
@@ -61,16 +62,21 @@ export default function BookPage() {
   }, []);
 
   const station = stations.find((s) => s.id === stationId);
-  const cost = station ? Number((Number(station.hourly_rate) * hours).toFixed(2)) : 0;
   const filtered = stations.filter((s) => filterType === "all" || s.type === filterType);
   const stationSeats = seats.filter((s) => s.station_id === stationId);
   const needsSeatPick = !!station && station.capacity > 1 && stationSeats.length > 0;
 
+  const seatCount = needsSeatPick ? seatIds.length : Math.max(1, quantity);
+  const cost = station ? Number((Number(station.hourly_rate) * hours * seatCount).toFixed(2)) : 0;
+
   const startISO = useMemo(() => new Date(start).toISOString(), [start]);
   const endISO = useMemo(() => new Date(new Date(start).getTime() + hours * 3600_000).toISOString(), [start, hours]);
 
-  // Reset seat selection whenever the station or time window changes
-  useEffect(() => { setSeatId(""); }, [stationId, startISO, endISO]);
+  // Reset selections whenever the station or time window changes
+  useEffect(() => {
+    setSeatIds([]);
+    setQuantity(1);
+  }, [stationId, startISO, endISO]);
 
   useEffect(() => {
     if (!stations.length) return;
@@ -90,11 +96,16 @@ export default function BookPage() {
   }, [stations, startISO, endISO]);
 
   const freeCount = (s: Station) => Math.max(0, s.capacity - (taken[s.id] ?? 0));
+  const stationFree = station ? freeCount(station) : 0;
+
+  function toggleSeat(id: string) {
+    setSeatIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
 
   function refreshMyBookings() {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return;
-      supabase.from("bookings").select("*, stations(name, type)")
+      supabase.from("bookings").select("*, stations(name, type), station_seats:seat_id(label)")
         .eq("user_id", data.user.id).gte("end_time", new Date().toISOString())
         .order("start_time")
         .then(({ data }) => setBookings(data ?? []));
@@ -103,20 +114,23 @@ export default function BookPage() {
 
   async function book() {
     if (!stationId) { toast({ title: "Суудал сонгоно уу", variant: "destructive" }); return; }
-    if (needsSeatPick && !seatId) {
+    if (needsSeatPick && seatIds.length === 0) {
       toast({ title: "Тоглох PC-гээ сонгоно уу", variant: "destructive" });
       return;
     }
     setBusy(true);
-    const { data, error } = await supabase.functions.invoke("create-booking", {
-      body: { station_id: stationId, seat_id: seatId || null, start_time: startISO, end_time: endISO },
-    });
+    const body: any = { station_id: stationId, start_time: startISO, end_time: endISO };
+    if (needsSeatPick) body.seat_ids = seatIds;
+    else body.quantity = quantity;
+
+    const { data, error } = await supabase.functions.invoke("create-booking", { body });
     setBusy(false);
     if (error || (data as any)?.error) {
       toast({ title: "Захиалга амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Захиалсан!", description: `${(data as any).cost.toLocaleString("mn-MN")}₮ төлөгдлөө. Үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` });
+    const n = (data as any).count ?? 1;
+    toast({ title: "Захиалсан!", description: `${n} PC · ${(data as any).cost.toLocaleString("mn-MN")}₮ төлөгдлөө. Үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` });
     refreshMyBookings();
   }
 
