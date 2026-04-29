@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Trophy, Gamepad2, UtensilsCrossed, CreditCard, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Trophy, Gamepad2, UtensilsCrossed, CreditCard, MapPin, Clock, ArrowRight, Sprout, AlertTriangle } from "lucide-react";
 import heroImage from "@/assets/hero-cafe.jpg";
 
 export default function Home() {
