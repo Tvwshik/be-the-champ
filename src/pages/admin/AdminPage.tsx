@@ -70,7 +70,7 @@ function OrdersQueue() {
               <div className="flex items-start justify-between mb-2 gap-3">
                 <div>
                   <p className="font-semibold">#{o.id.slice(0, 6).toUpperCase()} · {o.profiles?.full_name ?? "Гишүүн"}</p>
-                  <p className="text-xs text-muted-foreground">Суудал: {o.stations?.name ?? o.seat_label ?? "—"} · ${Number(o.total).toFixed(2)} · {new Date(o.created_at).toLocaleTimeString()}</p>
+                  <p className="text-xs text-muted-foreground">Суудал: {o.stations?.name ?? o.seat_label ?? "—"} · {Number(o.total).toLocaleString("mn-MN")}₮ · {new Date(o.created_at).toLocaleTimeString()}</p>
                 </div>
                 <Badge variant={o.status === "received" ? "outline" : "default"}>{ORDER_STATUS_LABEL[o.status] ?? o.status}</Badge>
               </div>
@@ -109,7 +109,7 @@ function BookingsAdmin() {
             <div key={b.id} className="flex items-center justify-between gap-3 p-3 border border-border/40 rounded-md flex-wrap">
               <div>
                 <p className="font-semibold">{b.stations?.name} · {b.profiles?.full_name ?? "—"}</p>
-                <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString()} · ${Number(b.total_cost).toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">{new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString()} · {Number(b.total_cost).toLocaleString("mn-MN")}₮</p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline">{BOOKING_STATUS_LABEL[b.status] ?? b.status}</Badge>
@@ -143,7 +143,7 @@ function TopupsAdmin() {
             <div key={r.id} className="flex items-center justify-between gap-3 p-3 border border-border/40 rounded-md">
               <div>
                 <p className="font-mono font-bold tracking-widest">{r.code}</p>
-                <p className="text-xs text-muted-foreground">{r.profiles?.full_name ?? "Гишүүн"} · ${Number(r.amount).toFixed(2)} · {new Date(r.created_at).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">{r.profiles?.full_name ?? "Гишүүн"} · {Number(r.amount).toLocaleString("mn-MN")}₮ · {new Date(r.created_at).toLocaleString()}</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => resolve(r.id, "approve")}>Зөвшөөрөх</Button>
@@ -176,7 +176,7 @@ function MembersAdmin() {
       body: { user_id: adjUser, amount: amt, description: adjDesc },
     });
     if (error || (data as any)?.error) toast({ title: "Амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
-    else { toast({ title: "Хэтэвч шинэчлэгдлээ", description: `Шинэ үлдэгдэл: $${(data as any).balance.toFixed(2)}` }); setAdjAmount(""); load(); }
+    else { toast({ title: "Хэтэвч шинэчлэгдлээ", description: `Шинэ үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` }); setAdjAmount(""); load(); }
   };
   return (
     <div className="mt-4 space-y-4">
@@ -205,7 +205,7 @@ function MembersAdmin() {
                 <p className="text-xs text-muted-foreground">{m.phone ?? "утас алга"} · бүртгүүлсэн {new Date(m.created_at).toLocaleDateString()}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-secondary">${Number(m.wallet_balance).toFixed(2)}</p>
+                <p className="font-bold text-secondary">{Number(m.wallet_balance).toLocaleString("mn-MN")}₮</p>
                 {m.is_suspended && <Badge variant="destructive">Түр хаагдсан</Badge>}
               </div>
             </div>
@@ -255,7 +255,7 @@ function MenuAdmin() {
             <div key={it.id} className="flex items-center justify-between p-2 border-b border-border/40 last:border-0">
               <div>
                 <p className="font-semibold">{it.name}</p>
-                <p className="text-xs text-muted-foreground">${Number(it.price).toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">{Number(it.price).toLocaleString("mn-MN")}₮</p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={it.is_available ? "default" : "outline"}>{it.is_available ? "идэвхтэй" : "идэвхгүй"}</Badge>
@@ -285,7 +285,7 @@ function StationsAdmin() {
           <div key={s.id} className="flex items-center justify-between p-2 border-b border-border/40 last:border-0">
             <div>
               <p className="font-semibold">{s.name}</p>
-              <p className="text-xs text-muted-foreground">{s.type} · ${Number(s.hourly_rate).toFixed(2)}/ц · суудал {s.capacity}</p>
+              <p className="text-xs text-muted-foreground">{s.type} · {Number(s.hourly_rate).toLocaleString("mn-MN")}₮/ц · суудал {s.capacity}</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant={s.is_active ? "default" : "outline"}>{s.is_active ? "идэвхтэй" : "идэвхгүй"}</Badge>

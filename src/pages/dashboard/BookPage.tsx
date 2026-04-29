@@ -90,7 +90,7 @@ export default function BookPage() {
       toast({ title: "Захиалга амжилтгүй", description: (data as any)?.error || error?.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Захиалсан!", description: `$${(data as any).cost.toFixed(2)} төлөгдлөө. Үлдэгдэл: $${(data as any).balance.toFixed(2)}` });
+    toast({ title: "Захиалсан!", description: `${(data as any).cost.toLocaleString("mn-MN")}₮ төлөгдлөө. Үлдэгдэл: ${(data as any).balance.toLocaleString("mn-MN")}₮` });
     refreshMyBookings();
   }
 
@@ -163,7 +163,7 @@ export default function BookPage() {
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/40">
           <div>
             <p className="text-sm text-muted-foreground">Нийт</p>
-            <p className="font-display text-2xl text-secondary">${cost.toFixed(2)}</p>
+            <p className="font-display text-2xl text-secondary">{Number(cost).toLocaleString("mn-MN")}₮</p>
           </div>
           <Button disabled={busy || !stationId} onClick={book} size="lg"
             className="bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold">
@@ -183,7 +183,7 @@ export default function BookPage() {
                 <div>
                   <p className="font-semibold">{b.stations?.name} <Badge variant="outline" className="ml-2">{STATUS_LABEL[b.status] ?? b.status}</Badge></p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${Number(b.total_cost).toFixed(2)}
+                    {new Date(b.start_time).toLocaleString()} → {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {Number(b.total_cost).toLocaleString("mn-MN")}₮
                   </p>
                 </div>
                 {b.status === "confirmed" && (

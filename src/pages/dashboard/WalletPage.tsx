@@ -61,7 +61,7 @@ export default function WalletPage() {
           <WalletIcon className="h-6 w-6 text-primary" />
           <span className="text-sm text-muted-foreground">Одоогийн үлдэгдэл</span>
         </div>
-        <p className="font-display text-5xl">${balance.toFixed(2)}</p>
+        <p className="font-display text-5xl">{Number(balance).toLocaleString("mn-MN")}₮</p>
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -100,7 +100,7 @@ export default function WalletPage() {
               <div key={r.id} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
                 <div>
                   <p className="font-mono text-lg font-bold tracking-widest">{r.code}</p>
-                  <p className="text-xs text-muted-foreground">${Number(r.amount).toFixed(2)} · {new Date(r.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{Number(r.amount).toLocaleString("mn-MN")}₮ · {new Date(r.created_at).toLocaleString()}</p>
                 </div>
                 <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : "outline"}>
                   {r.status === "approved" && <Check className="h-3 w-3 mr-1" />}
@@ -127,7 +127,7 @@ export default function WalletPage() {
                   <p className="text-xs text-muted-foreground capitalize">{t.type.replace("_", " ")} · {new Date(t.created_at).toLocaleString()}</p>
                 </div>
                 <span className={`font-bold ${Number(t.amount) >= 0 ? "text-success" : "text-foreground"}`}>
-                  {Number(t.amount) >= 0 ? "+" : ""}${Number(t.amount).toFixed(2)}
+                  {Number(t.amount) >= 0 ? "+" : ""}{Number(t.amount).toLocaleString("mn-MN")}₮
                 </span>
               </div>
             ))}
