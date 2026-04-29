@@ -174,16 +174,25 @@ export default function OrderPage() {
 
             <div className="space-y-3 border-t border-border/40 pt-4">
               <div className="space-y-1">
-                <Label>Хүргэх суудал</Label>
-                <Select value={stationId} onValueChange={(v) => { setStationId(v); setSeatLabel(""); }}>
-                  <SelectTrigger><SelectValue placeholder="Суудал сонгох…" /></SelectTrigger>
+                <Label>Хэсэг / өрөө</Label>
+                <Select value={stationId} onValueChange={(v) => { setStationId(v); setSeatId(""); setManualSeat(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Хэсэг сонгох…" /></SelectTrigger>
                   <SelectContent>{stations.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+              {stationId && seatsForStation.length > 0 && (
+                <div className="space-y-1">
+                  <Label>Суудал (PC)</Label>
+                  <Select value={seatId} onValueChange={(v) => { setSeatId(v); setManualSeat(""); }}>
+                    <SelectTrigger><SelectValue placeholder="Суудал сонгох…" /></SelectTrigger>
+                    <SelectContent>{seatsForStation.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
               <p className="text-center text-xs text-muted-foreground">— эсвэл —</p>
               <div className="space-y-1">
-                <Label>Суудлын дугаар</Label>
-                <Input value={seatLabel} onChange={(e) => { setSeatLabel(e.target.value); if (e.target.value) setStationId(""); }} placeholder="ж.нь PC-09" maxLength={50} />
+                <Label>Суудлын дугаар (гараар)</Label>
+                <Input value={manualSeat} onChange={(e) => { setManualSeat(e.target.value); if (e.target.value) { setStationId(""); setSeatId(""); } }} placeholder="ж.нь PC-09" maxLength={50} />
               </div>
               <div className="space-y-1">
                 <Label>Тэмдэглэл (заавал биш)</Label>
