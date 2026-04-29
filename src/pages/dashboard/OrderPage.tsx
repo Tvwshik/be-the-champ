@@ -26,8 +26,10 @@ export default function OrderPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [stations, setStations] = useState<{ id: string; name: string }[]>([]);
+  const [seats, setSeats] = useState<{ id: string; station_id: string; label: string; position: number }[]>([]);
   const [stationId, setStationId] = useState<string>("");
-  const [seatLabel, setSeatLabel] = useState<string>("");
+  const [seatId, setSeatId] = useState<string>("");
+  const [manualSeat, setManualSeat] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
@@ -37,13 +39,17 @@ export default function OrderPage() {
       supabase.from("menu_categories").select("*").order("sort_order"),
       supabase.from("menu_items").select("*").eq("is_available", true).order("name"),
       supabase.from("stations").select("id, name").eq("is_active", true).order("name"),
-    ]).then(([c, i, s]) => {
+      supabase.from("station_seats").select("id, station_id, label, position").eq("is_active", true).order("position"),
+    ]).then(([c, i, s, se]) => {
       setCats((c.data ?? []) as Cat[]);
       setItems((i.data ?? []) as Item[]);
       setStations((s.data ?? []) as any);
+      setSeats((se.data ?? []) as any);
     });
     refreshOrders();
   }, [user]);
+
+  const seatsForStation = seats.filter((s) => s.station_id === stationId);
 
   function refreshOrders() {
     if (!user) return;
