@@ -41,20 +41,22 @@ Deno.serve(async (req) => {
 
     // Check station
     const { data: station, error: stErr } = await supabase
-      .from("stations").select("id, hourly_rate, is_active").eq("id", station_id).single();
+      .from("stations").select("id, hourly_rate, capacity, is_active").eq("id", station_id).single();
     if (stErr || !station || !station.is_active) return json({ error: "Station not available" }, 400);
 
     const cost = Number((Number(station.hourly_rate) * hours).toFixed(2));
+    const capacity = Number(station.capacity ?? 1);
 
-    // Overlap check
-    const { data: overlap } = await supabase
-      .from("bookings").select("id")
+    // Overlap check — respect capacity (e.g. VIP rooms have 5 PCs)
+    const { data: overlap, count } = await supabase
+      .from("bookings")
+      .select("id", { count: "exact" })
       .eq("station_id", station_id)
       .in("status", ["confirmed", "checked_in"])
       .lt("start_time", end.toISOString())
-      .gt("end_time", start.toISOString())
-      .limit(1);
-    if (overlap && overlap.length) return json({ error: "Time slot already booked" }, 409);
+      .gt("end_time", start.toISOString());
+    const taken = count ?? overlap?.length ?? 0;
+    if (taken >= capacity) return json({ error: "Энэ цагт суудал дүүрсэн байна" }, 409);
 
     // Wallet balance
     const { data: profile } = await supabase
@@ -62,7 +64,7 @@ Deno.serve(async (req) => {
     if (!profile) return json({ error: "Profile not found" }, 404);
     if (profile.is_suspended) return json({ error: "Account suspended" }, 403);
     const balance = Number(profile.wallet_balance);
-    if (balance < cost) return json({ error: `Insufficient balance. Need $${cost.toFixed(2)}, have $${balance.toFixed(2)}` }, 402);
+    if (balance < cost) return json({ error: `Үлдэгдэл хүрэлцэхгүй. Шаардлагатай: ${cost.toLocaleString("mn-MN")}₮, үлдэгдэл: ${balance.toLocaleString("mn-MN")}₮` }, 402);
 
     const newBalance = Number((balance - cost).toFixed(2));
 

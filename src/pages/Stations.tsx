@@ -42,15 +42,38 @@ const fmtMnt = (n: number) => `${n.toLocaleString("mn-MN")}₮`;
 export default function Stations() {
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+  const [taken, setTaken] = useState<Record<string, number>>({});
+
+  async function loadAvailability() {
+    const now = new Date().toISOString();
+    const { data } = await supabase
+      .from("bookings")
+      .select("station_id")
+      .in("status", ["confirmed", "checked_in"])
+      .lte("start_time", now)
+      .gt("end_time", now);
+    const counts: Record<string, number> = {};
+    (data ?? []).forEach((r: any) => { counts[r.station_id] = (counts[r.station_id] ?? 0) + 1; });
+    setTaken(counts);
+  }
 
   useEffect(() => {
     supabase.from("stations").select("*").eq("is_active", true).order("name")
       .then(({ data }) => { setStations((data ?? []) as Station[]); setLoading(false); });
+    loadAvailability();
+    const id = setInterval(loadAvailability, 30_000);
+    return () => clearInterval(id);
   }, []);
+
+  const freeCount = (s: Station) => Math.max(0, s.capacity - (taken[s.id] ?? 0));
 
   const grouped = stations.reduce<Record<string, Station[]>>((acc, s) => {
     (acc[s.type] ||= []).push(s); return acc;
   }, {});
+
+  const tierFree = (items: Station[]) => items.reduce((n, s) => n + freeCount(s), 0);
+  const tierTotal = (items: Station[]) => items.reduce((n, s) => n + s.capacity, 0);
+
 
   return (
     <div className="container py-12 md:py-16">
@@ -92,31 +115,47 @@ export default function Stations() {
         const info = TYPE_INFO[type];
         const Icon = info.icon;
         const rate = items[0].hourly_rate;
+        const free = tierFree(items);
+        const total = tierTotal(items);
+        const tierColor = free === 0 ? "border-destructive text-destructive" : free < total / 3 ? "border-warning text-warning" : "border-success text-success";
         return (
           <section key={type} className="mb-12">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               <Icon className={`h-6 w-6 ${info.color}`} />
               <h2 className="font-display text-2xl">{info.label}</h2>
               <span className="font-bold text-secondary">{fmtMnt(rate)} <span className="text-xs text-muted-foreground font-normal">/ 1 цаг</span></span>
-              <Badge variant="outline" className="ml-auto">{items.length} суудал</Badge>
+              <Badge variant="outline" className={`ml-auto ${tierColor}`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-current mr-1.5 animate-pulse" />
+                {free} / {total} сул
+              </Badge>
             </div>
             <p className="text-sm text-muted-foreground mb-5">{info.tagline}</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {items.map((s) => (
-                <Card key={s.id} className="p-5 bg-card/60 border-border/60 hover:border-primary/50 transition-all hover:-translate-y-0.5">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-display text-lg">{s.name}</h3>
-                    <span className="text-secondary font-bold text-sm">{fmtMnt(s.hourly_rate)}/ц</span>
-                  </div>
-                  {s.description && <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{s.description}</p>}
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-xs text-muted-foreground">Багтаамж: {s.capacity}</span>
-                    <Button asChild size="sm" variant="outline">
-                      <Link to={`/dashboard/book?station=${s.id}`}>Захиалах</Link>
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+              {items.map((s) => {
+                const f = freeCount(s);
+                const dot = f === 0 ? "bg-destructive" : f === s.capacity ? "bg-success" : "bg-warning";
+                return (
+                  <Card key={s.id} className="p-5 bg-card/60 border-border/60 hover:border-primary/50 transition-all hover:-translate-y-0.5">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-display text-lg">{s.name}</h3>
+                      <span className="text-secondary font-bold text-sm">{fmtMnt(s.hourly_rate)}/ц</span>
+                    </div>
+                    {s.description && <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{s.description}</p>}
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <span className={`inline-block w-2 h-2 rounded-full ${dot} ${f > 0 ? "animate-pulse" : ""}`} />
+                      <span className="text-xs text-muted-foreground">
+                        {f === 0 ? "Дүүрсэн" : `${f} / ${s.capacity} сул`}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-muted-foreground">Багтаамж: {s.capacity}</span>
+                      <Button asChild size="sm" variant="outline" disabled={f === 0}>
+                        <Link to={`/dashboard/book?station=${s.id}`}>Захиалах</Link>
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           </section>
         );

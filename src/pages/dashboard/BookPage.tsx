@@ -43,7 +43,7 @@ export default function BookPage() {
   const [hours, setHours] = useState<number>(2);
   const [busy, setBusy] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
-  const [available, setAvailable] = useState<Set<string>>(new Set());
+  const [taken, setTaken] = useState<Record<string, number>>({});
 
   useEffect(() => {
     supabase.from("stations").select("*").eq("is_active", true).order("name")
@@ -64,11 +64,13 @@ export default function BookPage() {
       .in("status", ["confirmed", "checked_in"])
       .lt("start_time", endISO).gt("end_time", startISO)
       .then(({ data }) => {
-        const taken = new Set((data ?? []).map((r: any) => r.station_id));
-        const av = new Set(stations.filter((s) => !taken.has(s.id)).map((s) => s.id));
-        setAvailable(av);
+        const counts: Record<string, number> = {};
+        (data ?? []).forEach((r: any) => { counts[r.station_id] = (counts[r.station_id] ?? 0) + 1; });
+        setTaken(counts);
       });
   }, [stations, startISO, endISO]);
+
+  const freeCount = (s: Station) => Math.max(0, s.capacity - (taken[s.id] ?? 0));
 
   function refreshMyBookings() {
     supabase.auth.getUser().then(({ data }) => {
@@ -127,9 +129,11 @@ export default function BookPage() {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Бүх төрөл</SelectItem>
-                <SelectItem value="pc_standard">Энгийн PC</SelectItem>
-                <SelectItem value="pc_vip">VIP PC</SelectItem>
-                <SelectItem value="console">Консол</SelectItem>
+                <SelectItem value="pc_standard">HALL</SelectItem>
+                <SelectItem value="pc_vip">VIP</SelectItem>
+                <SelectItem value="pc_vvip">VVIP</SelectItem>
+                <SelectItem value="pc_stage">STAGE</SelectItem>
+                <SelectItem value="pc_scorpion">SCORPION</SelectItem>
                 <SelectItem value="room">Тусдаа өрөө</SelectItem>
               </SelectContent>
             </Select>
@@ -140,7 +144,9 @@ export default function BookPage() {
           <Label className="mb-3 block">Энэ цагт боломжтой суудлууд</Label>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map((s) => {
-              const isAv = available.has(s.id);
+              const free = freeCount(s);
+              const isAv = free > 0;
+              const fullyFree = free === s.capacity;
               const selected = stationId === s.id;
               return (
                 <button key={s.id} disabled={!isAv} onClick={() => setStationId(s.id)}
@@ -154,7 +160,16 @@ export default function BookPage() {
                     <span className="text-secondary font-bold text-sm">{Number(s.hourly_rate).toLocaleString("mn-MN")}₮/ц</span>
                   </div>
                   <span className="text-xs text-muted-foreground">{TYPE_LABEL[s.type]}</span>
-                  {!isAv && <Badge variant="outline" className="mt-1 text-[10px]">Захиалагдсан</Badge>}
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span
+                      className={`inline-block w-1.5 h-1.5 rounded-full ${
+                        !isAv ? "bg-destructive" : fullyFree ? "bg-success" : "bg-warning"
+                      }`}
+                    />
+                    <span className="text-[11px] text-muted-foreground">
+                      {!isAv ? "Дүүрсэн" : `${free} / ${s.capacity} сул`}
+                    </span>
+                  </div>
                 </button>
               );
             })}
