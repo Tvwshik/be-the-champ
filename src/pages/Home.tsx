@@ -102,7 +102,7 @@ export default function Home() {
         <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
           <div>
             <h2 className="font-display text-3xl md:text-4xl mb-2">Өөрийн <span className="text-gradient-neon">тулааны суудлаа</span> сонго</h2>
-            <p className="text-muted-foreground">Энгийн PC, VIP машин, консол, тусдаа өрөө.</p>
+            <p className="text-muted-foreground">Энгийн PC, VIP, консол, тусдаа өрөө.</p>
           </div>
           <Button asChild variant="outline"><Link to="/stations">Бүгдийг үзэх <ArrowRight className="h-4 w-4" /></Link></Button>
         </div>
