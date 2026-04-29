@@ -26,8 +26,10 @@ export default function OrderPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [stations, setStations] = useState<{ id: string; name: string }[]>([]);
+  const [seats, setSeats] = useState<{ id: string; station_id: string; label: string; position: number }[]>([]);
   const [stationId, setStationId] = useState<string>("");
-  const [seatLabel, setSeatLabel] = useState<string>("");
+  const [seatId, setSeatId] = useState<string>("");
+  const [manualSeat, setManualSeat] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
@@ -37,13 +39,17 @@ export default function OrderPage() {
       supabase.from("menu_categories").select("*").order("sort_order"),
       supabase.from("menu_items").select("*").eq("is_available", true).order("name"),
       supabase.from("stations").select("id, name").eq("is_active", true).order("name"),
-    ]).then(([c, i, s]) => {
+      supabase.from("station_seats").select("id, station_id, label, position").eq("is_active", true).order("position"),
+    ]).then(([c, i, s, se]) => {
       setCats((c.data ?? []) as Cat[]);
       setItems((i.data ?? []) as Item[]);
       setStations((s.data ?? []) as any);
+      setSeats((se.data ?? []) as any);
     });
     refreshOrders();
   }, [user]);
+
+  const seatsForStation = seats.filter((s) => s.station_id === stationId);
 
   function refreshOrders() {
     if (!user) return;
@@ -67,12 +73,25 @@ export default function OrderPage() {
 
   async function placeOrder() {
     if (Object.keys(cart).length === 0) { toast({ title: "Сагс хоосон байна", variant: "destructive" }); return; }
-    if (!stationId && !seatLabel.trim()) { toast({ title: "Суудлаа мэдэгдээрэй", description: "Суудал сонгох эсвэл суудлын дугаараа бичнэ үү.", variant: "destructive" }); return; }
+    const station = stations.find((s) => s.id === stationId);
+    const seat = seats.find((s) => s.id === seatId);
+    let label: string | null = null;
+    if (manualSeat.trim()) {
+      label = manualSeat.trim();
+    } else if (station && seat) {
+      label = `${station.name} · ${seat.label}`;
+    } else if (station && seatsForStation.length === 0) {
+      label = station.name;
+    }
+    if (!label) {
+      toast({ title: "Суудлаа сонгоно уу", description: "Хэсэг болон суудлаа сонгох эсвэл суудлын дугаараа бичнэ үү.", variant: "destructive" });
+      return;
+    }
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("place-order", {
       body: {
-        station_id: stationId || null,
-        seat_label: stationId ? null : seatLabel.trim(),
+        station_id: manualSeat.trim() ? null : stationId || null,
+        seat_label: label,
         notes: notes || undefined,
         items: Object.entries(cart).map(([menu_item_id, quantity]) => ({ menu_item_id, quantity })),
       },
@@ -83,7 +102,7 @@ export default function OrderPage() {
       return;
     }
     toast({ title: "Захиалга хүлээж авлаа!", description: `${(data as any).total.toLocaleString("mn-MN")}₮ төлөгдлөө.` });
-    setCart({}); setNotes("");
+    setCart({}); setNotes(""); setSeatId(""); setManualSeat("");
     refreshOrders();
   }
 
@@ -155,16 +174,25 @@ export default function OrderPage() {
 
             <div className="space-y-3 border-t border-border/40 pt-4">
               <div className="space-y-1">
-                <Label>Хүргэх суудал</Label>
-                <Select value={stationId} onValueChange={(v) => { setStationId(v); setSeatLabel(""); }}>
-                  <SelectTrigger><SelectValue placeholder="Суудал сонгох…" /></SelectTrigger>
+                <Label>Хэсэг / өрөө</Label>
+                <Select value={stationId} onValueChange={(v) => { setStationId(v); setSeatId(""); setManualSeat(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Хэсэг сонгох…" /></SelectTrigger>
                   <SelectContent>{stations.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+              {stationId && seatsForStation.length > 0 && (
+                <div className="space-y-1">
+                  <Label>Суудал (PC)</Label>
+                  <Select value={seatId} onValueChange={(v) => { setSeatId(v); setManualSeat(""); }}>
+                    <SelectTrigger><SelectValue placeholder="Суудал сонгох…" /></SelectTrigger>
+                    <SelectContent>{seatsForStation.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
               <p className="text-center text-xs text-muted-foreground">— эсвэл —</p>
               <div className="space-y-1">
-                <Label>Суудлын дугаар</Label>
-                <Input value={seatLabel} onChange={(e) => { setSeatLabel(e.target.value); if (e.target.value) setStationId(""); }} placeholder="ж.нь PC-09" maxLength={50} />
+                <Label>Суудлын дугаар (гараар)</Label>
+                <Input value={manualSeat} onChange={(e) => { setManualSeat(e.target.value); if (e.target.value) { setStationId(""); setSeatId(""); } }} placeholder="ж.нь PC-09" maxLength={50} />
               </div>
               <div className="space-y-1">
                 <Label>Тэмдэглэл (заавал биш)</Label>
