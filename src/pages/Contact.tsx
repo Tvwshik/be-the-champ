@@ -40,7 +40,7 @@ export default function Contact() {
           <Card className="p-5 bg-card/60 border-border/60">
             <div className="flex items-start gap-3"><Mail className="h-5 w-5 text-primary mt-1" />
               <div><p className="font-semibold">И-мэйл</p>
-                <p className="text-sm text-muted-foreground">hello@bethechamp.cafe</p>
+                <p className="text-sm text-muted-foreground">esport.bethechamp@gmail.com</p>
               </div>
             </div>
           </Card>
