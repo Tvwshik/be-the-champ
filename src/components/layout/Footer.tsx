@@ -37,7 +37,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Be The Champ. Бүх эрх хуулиар хамгаалагдсан. · Made by Tvwshik
+        © {new Date().getFullYear()} Be The Champ. Бүх эрх хуулиар хамгаалагдсан.
       </div>
     </footer>
   );

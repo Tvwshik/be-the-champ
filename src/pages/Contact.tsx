@@ -33,7 +33,7 @@ export default function Contact() {
           <Card className="p-5 bg-card/60 border-border/60">
             <div className="flex items-start gap-3"><Phone className="h-5 w-5 text-primary mt-1" />
               <div><p className="font-semibold">Утас</p>
-                <a href="tel:+97696619444" className="text-sm text-primary hover:underline">9661-9444</a>
+                <a href="tel:+97672999777" className="text-sm text-primary hover:underline">+976 7299-9777</a>
               </div>
             </div>
           </Card>
