@@ -67,12 +67,11 @@ export default function Auth() {
 
   async function googleSignIn() {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + next },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + next,
     });
-    if (error) {
-      toast({ title: "Google-р нэвтрэх амжилтгүй боллоо", description: error.message, variant: "destructive" });
+    if (result.error) {
+      toast({ title: "Google-р нэвтрэх амжилтгүй боллоо", description: (result.error as any)?.message ?? String(result.error), variant: "destructive" });
       setBusy(false);
     }
   }
